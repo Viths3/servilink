@@ -1,0 +1,32 @@
+# Entorno
+.env
+.env.local
+.env.production
+
+# Dependencias
+node_modules/
+npm-debug.log*
+
+# Archivos subidos por usuarios (en producción van a cloud storage)
+uploads/
+
+# Build frontend (Fase 3)
+frontend/dist/
+frontend/build/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Tests
+coverage/
