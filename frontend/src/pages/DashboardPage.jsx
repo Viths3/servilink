@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 
@@ -372,6 +372,13 @@ function PestanaCliente() {
 // ── Página principal ──────────────────────────────────────────────
 export default function DashboardPage() {
   const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (usuario?.roles?.includes('admin')) {
+      navigate('/admin', { replace: true });
+    }
+  }, [usuario, navigate]);
 
   const esProveedor = usuario?.roles?.includes('proveedor');
   const esCliente   = usuario?.roles?.includes('cliente');

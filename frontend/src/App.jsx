@@ -7,6 +7,7 @@ import RegistroClientePage from './pages/RegistroClientePage';
 import RegistroProveedorPage from './pages/RegistroProveedorPage';
 import DetalleAnuncioPage from './pages/DetalleAnuncioPage';
 import DashboardPage from './pages/DashboardPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           {/* Rutas privadas — requieren sesión activa */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/admin"     element={<AdminPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
