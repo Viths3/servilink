@@ -119,13 +119,18 @@ const getSolicitudesRecibidas = async (req, res) => {
   }
 };
 
-// Helper: verificar que la solicitud pertenece al proveedor autenticado
-const verificarProveedor = (solicitud, usuarioId) =>
-  solicitud.proveedor.toString() === usuarioId.toString();
+// Helpers: extraen el ObjectId independientemente de si el campo está populado o no.
+// Cuando populate() se ejecuta, el campo pasa de ser ObjectId a un documento completo;
+// en ese caso .toString() devuelve "[object Object]", de ahí la necesidad de ._id.
+const verificarProveedor = (solicitud, usuarioId) => {
+  const id = solicitud.proveedor._id ?? solicitud.proveedor;
+  return id.toString() === usuarioId.toString();
+};
 
-// Helper: verificar que la solicitud pertenece al cliente autenticado
-const verificarCliente = (solicitud, usuarioId) =>
-  solicitud.cliente.toString() === usuarioId.toString();
+const verificarCliente = (solicitud, usuarioId) => {
+  const id = solicitud.cliente._id ?? solicitud.cliente;
+  return id.toString() === usuarioId.toString();
+};
 
 // ── RF-12 E2: PATCH /api/service-requests/:id/accept ─────────────
 const aceptarSolicitud = async (req, res) => {
