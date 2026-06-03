@@ -48,9 +48,9 @@ function Navbar() {
           <a href="#galeria" className="text-sm text-text-muted hover:text-text transition-colors">
             Explorar
           </a>
-          <a href="#como-funciona" className="text-sm text-text-muted hover:text-text transition-colors">
+          <Link to="/como-funciona" className="text-sm text-text-muted hover:text-text transition-colors">
             ¿Cómo funciona?
-          </a>
+          </Link>
         </div>
 
         {/* Acciones */}
@@ -146,24 +146,57 @@ function Navbar() {
 function AnuncioCard({ anuncio }) {
   const labelCategoria = CATEGORIAS.find((c) => c.value === anuncio.categoria)?.label ?? anuncio.categoria;
   const inicialCat = (labelCategoria?.[0] ?? '?').toUpperCase();
+  const fotos = anuncio.imagenes?.length ? anuncio.imagenes : anuncio.imagenUrl ? [anuncio.imagenUrl] : [];
+  const [idx, setIdx]     = useState(0);
+  const [paused, setPaused] = useState(false);
+  const intervalRef         = useRef(null);
+
+  useEffect(() => {
+    if (fotos.length <= 1 || paused) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+    intervalRef.current = setInterval(() => {
+      setIdx((i) => (i + 1) % fotos.length);
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, [fotos.length, paused]);
 
   return (
     <Link
       to={`/anuncios/${anuncio._id}`}
       className="bg-surface rounded-xl border border-border hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group"
     >
-      {/* Imagen o placeholder */}
-      {anuncio.imagenUrl ? (
-        <img
-          src={imgUrl(anuncio.imagenUrl)}
-          alt={anuncio.titulo}
-          className="w-full h-40 object-cover"
-        />
-      ) : (
-        <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
-          <span className="text-4xl font-bold text-gray-300">{inicialCat}</span>
-        </div>
-      )}
+      {/* Imagen o placeholder con mini-carrusel en hover */}
+      <div
+        className="relative overflow-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {fotos.length > 0 ? (
+          <>
+            <img
+              src={imgUrl(fotos[idx])}
+              alt={anuncio.titulo}
+              className="w-full h-40 object-cover"
+            />
+            {fotos.length > 1 && (
+              <div className="absolute bottom-1.5 inset-x-0 flex justify-center gap-1">
+                {fotos.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${i === idx ? 'bg-white' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
+            <span className="text-4xl font-bold text-gray-300">{inicialCat}</span>
+          </div>
+        )}
+      </div>
 
       {/* Cabecera con categoría */}
       <div className="px-5 pt-4 pb-2">

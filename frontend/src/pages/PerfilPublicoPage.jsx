@@ -41,8 +41,8 @@ function TarjetaAnuncio({ anuncio }) {
       to={`/anuncios/${anuncio._id}`}
       className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col group"
     >
-      {anuncio.imagenUrl ? (
-        <img src={imgUrl(anuncio.imagenUrl)} alt={anuncio.titulo} className="w-full h-36 object-cover" />
+      {(anuncio.imagenes?.[0] ?? anuncio.imagenUrl) ? (
+        <img src={imgUrl(anuncio.imagenes?.[0] ?? anuncio.imagenUrl)} alt={anuncio.titulo} className="w-full h-36 object-cover" />
       ) : (
         <div className="w-full h-36 bg-gray-100 flex items-center justify-center">
           <span className="text-4xl font-bold text-gray-300">{inicial}</span>

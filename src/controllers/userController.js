@@ -99,7 +99,7 @@ const getPerfilPublico = async (req, res) => {
 
     const [anuncios, solicitudesCompletadas] = await Promise.all([
       Announcement.find({ proveedor: req.params.id, estado: 'activo' })
-        .select('titulo descripcion categoria precioRef imagenUrl createdAt')
+        .select('titulo descripcion categoria precioRef imagenUrl imagenes createdAt')
         .lean(),
       ServiceRequest.countDocuments({ proveedor: req.params.id, estado: 'completada' }),
     ]);

@@ -85,12 +85,15 @@ const crearAnuncio = async (req, res) => {
       return res.status(400).json({ error: 'Título, descripción y categoría son requeridos' });
     }
 
+    const nuevasImagenes = (req.files ?? []).map((f) => `/uploads/${f.filename}`);
+
     const anuncio = new Announcement({
       proveedor: req.usuario._id,
       titulo: titulo.trim(),
       descripcion: descripcion.trim(),
       categoria,
       precioRef: precioRef != null ? Number(precioRef) : null,
+      imagenes: nuevasImagenes,
     });
 
     await anuncio.save();
@@ -123,12 +126,22 @@ const editarAnuncio = async (req, res) => {
       return res.status(403).json({ error: 'No puedes editar un anuncio suspendido' });
     }
 
-    const { titulo, descripcion, categoria, precioRef } = req.body;
+    const { titulo, descripcion, categoria, precioRef, imagenesEliminar } = req.body;
     const cambios = {};
     if (titulo) cambios.titulo = titulo.trim();
     if (descripcion) cambios.descripcion = descripcion.trim();
     if (categoria) cambios.categoria = categoria;
     if (precioRef != null) cambios.precioRef = Number(precioRef);
+
+    // Calcular nuevo array de imágenes
+    let imagenesActuales = anuncio.imagenes ?? [];
+    if (imagenesEliminar) {
+      let aEliminar = [];
+      try { aEliminar = JSON.parse(imagenesEliminar); } catch { /* ignorar */ }
+      imagenesActuales = imagenesActuales.filter((u) => !aEliminar.includes(u));
+    }
+    const nuevasImagenes = (req.files ?? []).map((f) => `/uploads/${f.filename}`);
+    cambios.imagenes = [...imagenesActuales, ...nuevasImagenes];
 
     const actualizado = await Announcement.findByIdAndUpdate(
       req.params.id,

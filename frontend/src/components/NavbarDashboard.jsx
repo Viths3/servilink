@@ -49,7 +49,7 @@ export default function NavbarDashboard({ badge }) {
                   ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                   : usuario?.nombre?.[0]?.toUpperCase() ?? '?'}
               </div>
-              <span className="hidden sm:block text-sm text-white/90 font-medium max-w-[140px] truncate">
+              <span className="hidden sm:block text-sm text-white/90 font-medium max-w-35 truncate">
                 {usuario?.nombre}
               </span>
               <svg

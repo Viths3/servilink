@@ -30,6 +30,8 @@ const announcementSchema = new mongoose.Schema(
       enum: ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'otro'],
     },
     precioRef:   { type: Number, min: 0, default: null },
+    imagenes:    [{ type: String }],
+    imagenUrl:   { type: String, default: null },
     estado:      {
       type: String,
       enum: ['activo', 'inactivo', 'suspendido'],

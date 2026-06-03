@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import NavbarDashboard from '../components/NavbarDashboard';
 import { imgUrl } from '../lib/imageUrl';
+import DateTimePicker from '../components/DateTimePicker';
 
 // ── Constantes ────────────────────────────────────────────────────
 const ESTADO_STYLE = {
@@ -97,10 +98,11 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
     }
     setCargando(true);
     try {
-      const endpoint = `/api/service-requests/${solicitud._id}/${modo}`;
+      const SLUG = { rechazar: 'reject', reagendar: 'reschedule' };
+      const endpoint = `/api/service-requests/${solicitud._id}/${SLUG[modo]}`;
       const body = modo === 'rechazar'
         ? { motivoRechazo: valor.trim() }
-        : { fechaPropuesta: new Date(valor).toISOString() };
+        : { fechaPropuesta: valor };
       const { data } = await api.patch(endpoint, body);
       onUpdate(solicitud._id, data.data);
       cancelar();
@@ -159,15 +161,11 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
         </div>
       )}
       {modo === 'reagendar' && (
-        <div>
-          <input
-            type="datetime-local"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
-            className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
-          />
-        </div>
+        <DateTimePicker
+          value={valor}
+          onChange={setValor}
+          min={new Date(Date.now() + 60000).toISOString()}
+        />
       )}
 
       {errorAcc && (
@@ -305,11 +303,12 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
   const [descripcion, setDescripcion] = useState(anuncio?.descripcion ?? '');
   const [categoria,   setCategoria]   = useState(anuncio?.categoria   ?? '');
   const [precio,      setPrecio]      = useState(anuncio?.precioRef != null ? String(anuncio.precioRef) : '');
-  const [imagen,      setImagen]      = useState(null);
-  const [preview,     setPreview]     = useState(anuncio?.imagen ?? null);
-  const [imagenError, setImagenError] = useState('');
-  const [cargando,    setCargando]    = useState(false);
-  const [errorMsg,    setErrorMsg]    = useState('');
+  const [imagenesExistentes, setImagenesExistentes] = useState(anuncio?.imagenes ?? []);
+  const [imagenesEliminar,   setImagenesEliminar]   = useState([]);
+  const [imagenesNuevas,     setImagenesNuevas]     = useState([]);
+  const [imagenError,        setImagenError]        = useState('');
+  const [cargando,           setCargando]           = useState(false);
+  const [errorMsg,           setErrorMsg]           = useState('');
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onCerrar(); };
@@ -317,22 +316,27 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
     return () => document.removeEventListener('keydown', handler);
   }, [onCerrar]);
 
-  const handleImagen = (e) => {
-    const file = e.target.files[0];
+  const handleImagenes = (e) => {
     setImagenError('');
-    if (!file) { setImagen(null); setPreview(anuncio?.imagen ?? null); return; }
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const invalidos = files.filter((f) => !['image/jpeg', 'image/png'].includes(f.type));
+    if (invalidos.length) {
       setImagenError('Solo se aceptan archivos JPG o PNG.');
       e.target.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setImagenError('El archivo supera el límite de 5 MB.');
+    const grandes = files.filter((f) => f.size > 5 * 1024 * 1024);
+    if (grandes.length) {
+      setImagenError('Cada archivo debe pesar menos de 5 MB.');
       e.target.value = '';
       return;
     }
-    setImagen(file);
-    setPreview(URL.createObjectURL(file));
+    setImagenesNuevas((prev) => [
+      ...prev,
+      ...files.map((f) => ({ file: f, preview: URL.createObjectURL(f) })),
+    ]);
+    e.target.value = '';
   };
 
   const handleEnviar = async (e) => {
@@ -347,7 +351,8 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
     fd.append('descripcion', descripcion.trim());
     fd.append('categoria', categoria);
     if (precio !== '') fd.append('precioRef', precio);
-    if (imagen) fd.append('imagen', imagen);
+    imagenesNuevas.forEach(({ file }) => fd.append('imagenes', file));
+    if (imagenesEliminar.length) fd.append('imagenesEliminar', JSON.stringify(imagenesEliminar));
 
     setCargando(true);
     try {
@@ -444,22 +449,45 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
             />
           </div>
 
-          {/* Imagen con preview */}
-          <div className="space-y-1.5">
+          {/* Imágenes con preview */}
+          <div className="space-y-2">
             <label className="block text-sm font-medium text-text">
-              Imagen del servicio <span className="text-text-muted font-normal">(opcional · JPG/PNG · máx. 5 MB)</span>
+              Imágenes del servicio <span className="text-text-muted font-normal">(opcional · JPG/PNG · máx. 5 MB · hasta 5)</span>
             </label>
-            {preview && (
-              <img
-                src={imgUrl(preview)}
-                alt="preview"
-                className="w-full h-32 object-cover rounded-lg border border-border"
-              />
+
+            {(imagenesExistentes.length > 0 || imagenesNuevas.length > 0) && (
+              <div className="grid grid-cols-3 gap-2">
+                {imagenesExistentes.map((path) => (
+                  <div key={path} className="relative">
+                    <img src={imgUrl(path)} alt="" className="w-full h-24 object-cover rounded-lg border border-border" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagenesExistentes((prev) => prev.filter((p) => p !== path));
+                        setImagenesEliminar((prev) => [...prev, path]);
+                      }}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center text-xs hover:bg-danger transition-colors"
+                    >✕</button>
+                  </div>
+                ))}
+                {imagenesNuevas.map(({ preview: prev }, i) => (
+                  <div key={i} className="relative">
+                    <img src={prev} alt="" className="w-full h-24 object-cover rounded-lg border border-border" />
+                    <button
+                      type="button"
+                      onClick={() => setImagenesNuevas((arr) => arr.filter((_, j) => j !== i))}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center text-xs hover:bg-danger transition-colors"
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
             )}
+
             <input
               type="file"
               accept="image/jpeg,image/png"
-              onChange={handleImagen}
+              multiple
+              onChange={handleImagenes}
               className="w-full text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
             />
             {imagenError && (

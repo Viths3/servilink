@@ -4,6 +4,7 @@ import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { imgUrl } from '../lib/imageUrl';
+import DateTimePicker from '../components/DateTimePicker';
 
 const CATEGORIAS = {
   electricidad: 'Electricidad',
@@ -20,6 +21,85 @@ function manana() {
   d.setDate(d.getDate() + 1);
   d.setHours(0, 0, 0, 0);
   return d.toISOString().slice(0, 16);
+}
+
+// ── Carrusel de imágenes ──────────────────────────────────────────
+function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
+  const fotos = imagenes?.length ? imagenes : (imagenUrl ? [imagenUrl] : []);
+  const [idx, setIdx]         = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const intervalRef           = useRef(null);
+
+  useEffect(() => {
+    if (fotos.length <= 1 || hovered) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+    intervalRef.current = setInterval(() => {
+      setIdx((i) => (i + 1) % fotos.length);
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, [fotos.length, hovered]);
+
+  if (!fotos.length) {
+    return (
+      <div className="w-full h-64 bg-gray-100 rounded-2xl flex items-center justify-center">
+        <span className="text-6xl font-bold text-gray-300">
+          {(categoriaLabel?.[0] ?? '?').toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  const prev = () => setIdx((i) => (i - 1 + fotos.length) % fotos.length);
+  const next = () => setIdx((i) => (i + 1) % fotos.length);
+
+  return (
+    <div
+      className="relative w-full rounded-2xl overflow-hidden select-none"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <img
+        src={imgUrl(fotos[idx])}
+        alt={`Imagen ${idx + 1}`}
+        className="w-full h-72 object-cover transition-opacity duration-300"
+      />
+
+      {fotos.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+            aria-label="Anterior"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+            aria-label="Siguiente"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5">
+            {fotos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className={`w-2 h-2 rounded-full transition-colors ${i === idx ? 'bg-white' : 'bg-white/40'}`}
+                aria-label={`Ir a imagen ${i + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 // ── Skeleton de carga ─────────────────────────────────────────────
@@ -143,7 +223,7 @@ function ModalSolicitud({ anuncio, onCerrar }) {
         proveedorId:    anuncio.proveedor._id,
         anuncioId:      anuncio._id,
         descripcion:    descripcion.trim(),
-        fechaPropuesta: new Date(fecha).toISOString(),
+        fechaPropuesta: fecha,
       });
       setExito(true);
       // Cierra el modal automáticamente después de 2.5 s
@@ -212,12 +292,10 @@ function ModalSolicitud({ anuncio, onCerrar }) {
               <label className="block text-sm font-medium text-text">
                 Fecha propuesta <span className="text-danger">*</span>
               </label>
-              <input
-                type="datetime-local"
+              <DateTimePicker
                 value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                onChange={setFecha}
                 min={manana()}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
               />
             </div>
 
@@ -313,6 +391,12 @@ export default function DetalleAnuncioPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* ── Columna principal ── */}
               <div className="lg:col-span-2 space-y-6">
+                <CarruselImagenes
+                  imagenes={anuncio.imagenes}
+                  imagenUrl={anuncio.imagenUrl}
+                  categoriaLabel={CATEGORIAS[anuncio.categoria] ?? anuncio.categoria}
+                />
+
                 <span className="inline-block text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
                   {CATEGORIAS[anuncio.categoria] ?? anuncio.categoria}
                 </span>
