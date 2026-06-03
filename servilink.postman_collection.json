@@ -1,0 +1,669 @@
+{
+  "info": {
+    "name": "ServiLink API",
+    "description": "Colección completa de endpoints ServiLink — Trabajo de Titulación UCACUE 2026",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000", "type": "string" },
+    { "key": "token",    "value": "",                      "type": "string" },
+    { "key": "userId",   "value": "",                      "type": "string" },
+    { "key": "anuncioId","value": "",                      "type": "string" },
+    { "key": "solicitudId","value": "",                    "type": "string" },
+    { "key": "upgradeId","value": "",                      "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "RF-01 Registro cliente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"María López\",\n  \"email\": \"maria@example.com\",\n  \"password\": \"password123\",\n  \"telefono\": \"+593991234567\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registra un nuevo usuario con rol 'cliente'."
+          }
+        },
+        {
+          "name": "RF-02 Registro proveedor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nombre",      "value": "Carlos Pérez",          "type": "text" },
+                { "key": "email",       "value": "carlos@example.com",    "type": "text" },
+                { "key": "password",    "value": "password123",            "type": "text" },
+                { "key": "telefono",    "value": "+593987654321",          "type": "text" },
+                { "key": "cedula",      "value": "0102030405",             "type": "text" },
+                { "key": "categoria",   "value": "electricidad",           "type": "text" },
+                { "key": "descripcion", "value": "Electricista con 5 años de experiencia", "type": "text" },
+                { "key": "documentos",  "type": "file", "src": "" },
+                { "key": "documentos",  "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register-provider",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register-provider"]
+            },
+            "description": "Registra un nuevo proveedor con cédula y documentos. verificationStatus queda en 'pendiente'."
+          }
+        },
+        {
+          "name": "RF-03 Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  pm.collectionVariables.set('userId', json.usuario.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Inicia sesión. El script de test guarda el token y userId automáticamente."
+          }
+        },
+        {
+          "name": "RF-04 Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Cierra sesión (stateless: el cliente descarta el token)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "GET Perfil propio",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "me"]
+            },
+            "description": "Devuelve el perfil del usuario autenticado."
+          }
+        },
+        {
+          "name": "PATCH Actualizar perfil",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"María López Actualizado\",\n  \"telefono\": \"+593991234999\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "RF-05 Subir documentos de verificación",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "documentos", "type": "file", "src": "" },
+                { "key": "documentos", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/upload-docs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "upload-docs"]
+            },
+            "description": "Solo para proveedores. Sube hasta 2 documentos (JPG/PNG/PDF, máx 5 MB c/u). Cambia verificationStatus a 'pendiente'."
+          }
+        },
+        {
+          "name": "GET Perfil público",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}/public",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{userId}}", "public"]
+            },
+            "description": "Devuelve el perfil público de cualquier usuario. No requiere autenticación."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Anuncios",
+      "item": [
+        {
+          "name": "RF-08 Listar anuncios (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/announcements?categoria=electricidad&search=instalacion&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                { "key": "categoria", "value": "electricidad", "description": "electricidad | plomeria | medicina | carpinteria | asesoria | otro" },
+                { "key": "search",    "value": "instalacion",  "description": "Búsqueda en título y descripción" },
+                { "key": "page",      "value": "1" },
+                { "key": "limit",     "value": "10" }
+              ]
+            },
+            "description": "Listado público con filtros de categoría y búsqueda de texto. Solo devuelve anuncios activos."
+          }
+        },
+        {
+          "name": "RF-08 Obtener anuncio por ID (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{anuncioId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{anuncioId}}"]
+            }
+          }
+        },
+        {
+          "name": "RF-09 Crear anuncio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data._id) {",
+                  "  pm.collectionVariables.set('anuncioId', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Instalación eléctrica residencial\",\n  \"descripcion\": \"Realizo instalaciones eléctricas completas con garantía de 1 año.\",\n  \"categoria\": \"electricidad\",\n  \"precioRef\": 80\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Requiere JWT de proveedor con verificationStatus='aprobado'."
+          }
+        },
+        {
+          "name": "RF-10 Editar anuncio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Instalación eléctrica residencial y comercial\",\n  \"precioRef\": 95\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{anuncioId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{anuncioId}}"]
+            },
+            "description": "Solo el dueño del anuncio puede editarlo. Anuncios suspendidos no son editables."
+          }
+        },
+        {
+          "name": "RF-11 Desactivar anuncio",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{anuncioId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{anuncioId}}"]
+            },
+            "description": "Soft-delete: cambia estado a 'inactivo'. Solo el dueño."
+          }
+        },
+        {
+          "name": "RF-21 Reportar anuncio",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"informacion_falsa\",\n  \"descripcion\": \"El precio indicado no corresponde al servicio ofrecido.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{anuncioId}}/report",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{anuncioId}}", "report"]
+            },
+            "description": "motivo: contenido_inapropiado | informacion_falsa | spam | otro. Un usuario no puede reportar el mismo anuncio dos veces."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Solicitudes",
+      "item": [
+        {
+          "name": "RF-12 E1 Enviar solicitud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data._id) {",
+                  "  pm.collectionVariables.set('solicitudId', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"<ID_DEL_PROVEEDOR>\",\n  \"descripcion\": \"Necesito revisar el tablero eléctrico de mi departamento.\",\n  \"fechaPropuesta\": \"2026-07-15T10:00:00.000Z\",\n  \"anuncioId\": \"{{anuncioId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/service-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests"]
+            },
+            "description": "anuncioId es opcional. Notifica al proveedor por WhatsApp (evento 1)."
+          }
+        },
+        {
+          "name": "GET Solicitudes enviadas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/sent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "sent"]
+            },
+            "description": "Solicitudes que el usuario autenticado envió como cliente."
+          }
+        },
+        {
+          "name": "GET Solicitudes recibidas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/received",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "received"]
+            },
+            "description": "Solicitudes recibidas por el proveedor autenticado. Requiere rol proveedor."
+          }
+        },
+        {
+          "name": "RF-12 E2 Aceptar solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/{{solicitudId}}/accept",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "{{solicitudId}}", "accept"]
+            },
+            "description": "Solo el proveedor dueño de la solicitud. Notifica al cliente por WhatsApp (evento 2)."
+          }
+        },
+        {
+          "name": "RF-12 E3 Rechazar solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivoRechazo\": \"No tengo disponibilidad para esa fecha.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/{{solicitudId}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "{{solicitudId}}", "reject"]
+            },
+            "description": "Notifica al cliente por WhatsApp (evento 3)."
+          }
+        },
+        {
+          "name": "RF-12 E4 Reagendar solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaPropuesta\": \"2026-07-20T14:00:00.000Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/{{solicitudId}}/reschedule",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "{{solicitudId}}", "reschedule"]
+            },
+            "description": "El proveedor propone una nueva fecha. Notifica al cliente por WhatsApp (evento 4)."
+          }
+        },
+        {
+          "name": "RF-12 E5a Aceptar reagendamiento",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/{{solicitudId}}/accept-reschedule",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "{{solicitudId}}", "accept-reschedule"]
+            },
+            "description": "El cliente acepta la nueva fecha. Notifica al proveedor por WhatsApp (evento 5)."
+          }
+        },
+        {
+          "name": "RF-12 E5b Rechazar reagendamiento",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/{{solicitudId}}/reject-reschedule",
+              "host": ["{{base_url}}"],
+              "path": ["api", "service-requests", "{{solicitudId}}", "reject-reschedule"]
+            },
+            "description": "El cliente rechaza la nueva fecha. La solicitud pasa a 'cancelada'. Notifica al proveedor (evento 5)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upgrade de rol",
+      "item": [
+        {
+          "name": "RF-16 Solicitar upgrade a proveedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data._id) {",
+                  "  pm.collectionVariables.set('upgradeId', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "cedula",      "value": "0102030405",  "type": "text" },
+                { "key": "categoria",   "value": "plomeria",    "type": "text" },
+                { "key": "descripcion", "value": "Plomero con 8 años de experiencia en instalaciones y reparaciones.", "type": "text" },
+                { "key": "documentos",  "type": "file", "src": "" },
+                { "key": "documentos",  "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upgrade-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upgrade-requests"]
+            },
+            "description": "Solo para clientes. Valida cédula módulo 10. Solo puede haber una solicitud pendiente por usuario."
+          }
+        },
+        {
+          "name": "GET Mi solicitud de upgrade",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/upgrade-requests/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upgrade-requests", "me"]
+            },
+            "description": "Devuelve la última solicitud de upgrade del usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "RF-18 Dashboard — estadísticas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stats"]
+            },
+            "description": "Requiere rol admin. Devuelve métricas de usuarios, anuncios y solicitudes."
+          }
+        },
+        {
+          "name": "RF-06 Ver verificaciones pendientes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/verifications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "verifications"]
+            }
+          }
+        },
+        {
+          "name": "RF-07 Procesar verificación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"aprobar\",\n  \"comentario\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/verifications/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "verifications", "{{userId}}"]
+            },
+            "description": "accion: 'aprobar' | 'rechazar'. comentario requerido al rechazar. Notifica por WhatsApp."
+          }
+        },
+        {
+          "name": "RF-17 Ver upgrades pendientes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/upgrade-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "upgrade-requests"]
+            }
+          }
+        },
+        {
+          "name": "RF-17 Procesar upgrade",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"aprobar\",\n  \"comentario\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/upgrade-requests/{{upgradeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "upgrade-requests", "{{upgradeId}}"]
+            },
+            "description": "Si aprueba: agrega rol 'proveedor' y crea providerData con verificationStatus='aprobado'. Notifica por WhatsApp."
+          }
+        },
+        {
+          "name": "RF-22 Ver anuncios reportados",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/announcements/reported",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "announcements", "reported"]
+            },
+            "description": "Lista anuncios con al menos un reporte sin revisar."
+          }
+        },
+        {
+          "name": "RF-22 Gestionar anuncio reportado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accion\": \"suspender\",\n  \"motivo\": \"Contenido que infringe las políticas de la plataforma.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/announcements/{{anuncioId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "announcements", "{{anuncioId}}"]
+            },
+            "description": "accion: 'editar' (campos opcionales + motivo) | 'suspender' (motivo requerido) | 'desestimar' (sin motivo). editar/suspender notifican al proveedor por WhatsApp."
+          }
+        },
+        {
+          "name": "RF-19 Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users?rol=proveedor&activo=true&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                { "key": "rol",    "value": "proveedor", "description": "cliente | proveedor | admin" },
+                { "key": "activo", "value": "true",      "description": "true | false" },
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "RF-19 Activar / Desactivar usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "{{userId}}"]
+            },
+            "description": "Regla 5: no se puede desactivar una cuenta de administrador."
+          }
+        }
+      ]
+    }
+  ]
+}
