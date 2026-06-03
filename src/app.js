@@ -22,8 +22,8 @@ app.use('/api/upgrade-requests', require('./routes/upgrade.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
 // Sprint 3: Anuncios, Solicitudes
-// app.use('/api/announcements',    require('./routes/announcement.routes'));
-// app.use('/api/service-requests', require('./routes/serviceRequest.routes'));
+app.use('/api/announcements', require('./routes/announcement.routes'));
+app.use('/api/service-requests', require('./routes/serviceRequest.routes'));
 
 // ── RUTA BASE ─────────────────────────────────────────────────────
 app.get('/', (req, res) => {
