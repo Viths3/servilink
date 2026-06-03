@@ -422,7 +422,7 @@ export default function DashboardPage() {
 
         {/* Contenido según pestaña activa */}
         {pestana === 'proveedor' && esProveedor && (
-          <PestanaProveedor usuarioId={usuario._id} />
+          <PestanaProveedor usuarioId={usuario.id} />
         )}
         {(pestana === 'cliente' || !esProveedor) && esCliente && (
           <PestanaCliente />
