@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
@@ -11,6 +13,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos subidos como estáticos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// ── SWAGGER UI ────────────────────────────────────────────────────
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'ServiLink API Docs',
+}));
 
 // ── RUTAS ─────────────────────────────────────────────────────────
 // Sprint 1: Auth

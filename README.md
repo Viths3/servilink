@@ -96,7 +96,6 @@ servilink/
 │   ├── ServiLink_Requerimientos_v3.1.docx
 │   ├── ServiLink_DiagramasUML_v5.0.docx
 │   └── ServiLink_Wireframes_v2.0.docx
-├── CLAUDE.md              # Contexto para Claude Code
 └── README.md
 ```
 
@@ -118,7 +117,7 @@ servilink/
 | GET | `/api/announcements` | Listar/buscar anuncios |
 | GET | `/api/announcements/:id` | Detalle de anuncio |
 
-Ver `CLAUDE.md` para la lista completa de endpoints.
+La documentación interactiva completa está disponible en `/api-docs` (Swagger UI) al levantar el servidor.
 
 ---
 
