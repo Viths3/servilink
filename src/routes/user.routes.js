@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
-const { uploadDocs, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadDocs, uploadFoto, handleUploadError } = require('../middlewares/upload.middleware');
 const { getMe, updateMe, subirDocumentos, getPerfilPublico } = require('../controllers/userController');
 
 /**
@@ -73,7 +73,7 @@ router.get('/me', auth, getMe);
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.patch('/me', auth, updateMe);
+router.patch('/me', auth, uploadFoto, handleUploadError, updateMe);
 
 /**
  * @openapi

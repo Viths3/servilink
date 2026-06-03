@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
+import ModalPerfil from '../components/ModalPerfil';
+import { imgUrl } from '../lib/imageUrl';
 
 const CATEGORIAS = [
   { value: 'electricidad', label: 'Electricidad' },
@@ -17,7 +19,8 @@ const LIMIT = 9;
 // ── Navbar ────────────────────────────────────────────────────────
 function Navbar() {
   const { usuario, logout } = useAuth();
-  const [abierto, setAbierto] = useState(false);
+  const [abierto, setAbierto]         = useState(false);
+  const [modalPerfil, setModalPerfil] = useState(false);
   const dropdownRef = useRef(null);
 
   // Cerrar dropdown al hacer clic fuera
@@ -31,6 +34,8 @@ function Navbar() {
   }, [abierto]);
 
   return (
+    <>
+    {modalPerfil && <ModalPerfil onCerrar={() => setModalPerfil(false)} />}
     <nav className="fixed top-0 inset-x-0 z-50 bg-surface border-b border-border h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
         {/* Logo */}
@@ -57,10 +62,13 @@ function Navbar() {
                 onClick={() => setAbierto((v) => !v)}
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-background transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
-                  {usuario.nombre?.[0]?.toUpperCase() ?? '?'}
-                </div>
-                <span className="hidden sm:block text-sm font-medium text-text max-w-[120px] truncate">
+                {usuario.fotoPerfil
+                  ? <img src={imgUrl(usuario.fotoPerfil)} className="w-8 h-8 rounded-full object-cover" alt={usuario.nombre} />
+                  : <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
+                      {usuario.nombre?.[0]?.toUpperCase() ?? '?'}
+                    </div>
+                }
+                <span className="hidden sm:block text-sm font-medium text-text max-w-30 truncate">
                   {usuario.nombre}
                 </span>
                 <svg
@@ -78,6 +86,15 @@ function Navbar() {
                     <p className="font-semibold text-text truncate">{usuario.nombre}</p>
                     <p className="text-xs text-text-muted truncate">{usuario.email}</p>
                   </div>
+                  <button
+                    onClick={() => { setModalPerfil(true); setAbierto(false); }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-text hover:bg-background transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-text-muted" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clipRule="evenodd" />
+                    </svg>
+                    Mi perfil
+                  </button>
                   <Link
                     to="/dashboard"
                     onClick={() => setAbierto(false)}
@@ -121,20 +138,35 @@ function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }
 
 // ── Tarjeta de anuncio ────────────────────────────────────────────
 function AnuncioCard({ anuncio }) {
   const labelCategoria = CATEGORIAS.find((c) => c.value === anuncio.categoria)?.label ?? anuncio.categoria;
+  const inicialCat = (labelCategoria?.[0] ?? '?').toUpperCase();
 
   return (
     <Link
       to={`/anuncios/${anuncio._id}`}
       className="bg-surface rounded-xl border border-border hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group"
     >
-      {/* Cabecera con color de categoría */}
-      <div className="bg-primary/8 px-5 pt-5 pb-3">
+      {/* Imagen o placeholder */}
+      {anuncio.imagenUrl ? (
+        <img
+          src={imgUrl(anuncio.imagenUrl)}
+          alt={anuncio.titulo}
+          className="w-full h-40 object-cover"
+        />
+      ) : (
+        <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
+          <span className="text-4xl font-bold text-gray-300">{inicialCat}</span>
+        </div>
+      )}
+
+      {/* Cabecera con categoría */}
+      <div className="px-5 pt-4 pb-2">
         <span className="inline-block text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
           {labelCategoria}
         </span>
@@ -158,7 +190,7 @@ function AnuncioCard({ anuncio }) {
             <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary">
               {anuncio.proveedor?.nombre?.[0]?.toUpperCase() ?? '?'}
             </div>
-            <span className="text-xs text-text-muted truncate max-w-[100px]">
+            <span className="text-xs text-text-muted truncate max-w-25">
               {anuncio.proveedor?.nombre ?? 'Proveedor'}
             </span>
             {/* Badge verificado */}

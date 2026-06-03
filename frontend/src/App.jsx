@@ -8,6 +8,8 @@ import RegistroProveedorPage from './pages/RegistroProveedorPage';
 import DetalleAnuncioPage from './pages/DetalleAnuncioPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
+import ComoFuncionaPage from './pages/ComoFuncionaPage';
+import PerfilPublicoPage from './pages/PerfilPublicoPage';
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
           <Route path="/registro"            element={<RegistroClientePage />} />
           <Route path="/registro-proveedor"  element={<RegistroProveedorPage />} />
           <Route path="/anuncios/:id"        element={<DetalleAnuncioPage />} />
+          <Route path="/como-funciona"       element={<ComoFuncionaPage />} />
+          <Route path="/usuarios/:id/public" element={<PerfilPublicoPage />} />
 
           {/* Rutas privadas — requieren sesión activa */}
           <Route element={<PrivateRoute />}>

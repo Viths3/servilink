@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
+import NavbarDashboard from '../components/NavbarDashboard';
+import { imgUrl } from '../lib/imageUrl';
 
 // ── Constantes ────────────────────────────────────────────────────
 const ESTADO_STYLE = {
@@ -51,30 +53,6 @@ function Vacio({ texto }) {
   );
 }
 
-// ── Navbar ────────────────────────────────────────────────────────
-function DashboardNav({ usuario, onLogout }) {
-  return (
-    <nav className="bg-primary border-b border-primary-dark h-16 flex items-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-white tracking-tight">ServiLink</Link>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white">
-              {usuario.nombre?.[0]?.toUpperCase() ?? '?'}
-            </div>
-            <span className="text-sm text-white/90 hidden sm:block font-medium">{usuario.nombre}</span>
-          </div>
-          <button
-            onClick={onLogout}
-            className="text-xs font-semibold text-white/80 hover:text-white border border-white/30 hover:border-white/60 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-    </nav>
-  );
-}
 
 // ── Tarjeta solicitud ENVIADA (vista cliente) ─────────────────────
 function TarjetaEnviada({ solicitud }) {
@@ -251,19 +229,51 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
 }
 
 // ── Tarjeta de anuncio propio ─────────────────────────────────────
-function TarjetaAnuncio({ anuncio }) {
+function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
+  const [eliminando, setEliminando] = useState(false);
+
+  const handleEliminar = async () => {
+    if (!window.confirm(`¿Eliminar el anuncio "${anuncio.titulo}"?`)) return;
+    setEliminando(true);
+    try {
+      await api.delete(`/api/announcements/${anuncio._id}`);
+      onEliminar(anuncio._id);
+    } catch (err) {
+      alert(err.response?.data?.error ?? 'Error al eliminar el anuncio.');
+    } finally {
+      setEliminando(false);
+    }
+  };
+
   return (
-    <Link
-      to={`/anuncios/${anuncio._id}`}
-      className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-3 hover:shadow-sm transition-shadow"
-    >
+    <div className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text truncate">{anuncio.titulo}</p>
+        <Link
+          to={`/anuncios/${anuncio._id}`}
+          className="text-sm font-semibold text-text truncate hover:text-primary transition-colors block"
+        >
+          {anuncio.titulo}
+        </Link>
         <p className="text-xs text-text-muted mt-0.5">
           {CATEGORIAS[anuncio.categoria] ?? anuncio.categoria}
           {anuncio.precioRef != null && <> · <span className="text-primary font-medium">${anuncio.precioRef}</span></>}
         </p>
         <p className="text-xs text-text-muted mt-0.5">{fmt(anuncio.createdAt)}</p>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => onEditar(anuncio)}
+            className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 rounded-lg transition-colors"
+          >
+            Editar
+          </button>
+          <button
+            onClick={handleEliminar}
+            disabled={eliminando}
+            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {eliminando ? '…' : 'Eliminar'}
+          </button>
+        </div>
       </div>
       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${
         anuncio.estado === 'activo' ? 'bg-success/10 text-success' :
@@ -272,23 +282,230 @@ function TarjetaAnuncio({ anuncio }) {
       }`}>
         {anuncio.estado}
       </span>
-    </Link>
+    </div>
   );
 }
 
 // ── Pestaña PROVEEDOR ─────────────────────────────────────────────
-function PestanaProveedor({ usuarioId }) {
-  const [recibidas, setRecibidas]   = useState([]);
-  const [loadRec, setLoadRec]       = useState(true);
-  const [anuncios, setAnuncios]     = useState([]);
-  const [loadAnu, setLoadAnu]       = useState(true);
+const CATEGORIAS_ANUNCIO = [
+  { value: 'electricidad', label: 'Electricidad' },
+  { value: 'plomeria',     label: 'Plomería' },
+  { value: 'medicina',     label: 'Medicina' },
+  { value: 'carpinteria',  label: 'Carpintería' },
+  { value: 'asesoria',     label: 'Asesoría' },
+  { value: 'otro',         label: 'Otro' },
+];
+
+// ── Modal crear / editar anuncio ─────────────────────────────────
+function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
+  const modoEdicion = Boolean(anuncio);
+  const overlayRef  = useRef(null);
+
+  const [titulo,      setTitulo]      = useState(anuncio?.titulo      ?? '');
+  const [descripcion, setDescripcion] = useState(anuncio?.descripcion ?? '');
+  const [categoria,   setCategoria]   = useState(anuncio?.categoria   ?? '');
+  const [precio,      setPrecio]      = useState(anuncio?.precioRef != null ? String(anuncio.precioRef) : '');
+  const [imagen,      setImagen]      = useState(null);
+  const [preview,     setPreview]     = useState(anuncio?.imagen ?? null);
+  const [imagenError, setImagenError] = useState('');
+  const [cargando,    setCargando]    = useState(false);
+  const [errorMsg,    setErrorMsg]    = useState('');
 
   useEffect(() => {
-    api.get('/api/service-requests/received')
-      .then(({ data }) => setRecibidas(data.data))
-      .catch(() => setRecibidas([]))
-      .finally(() => setLoadRec(false));
+    const handler = (e) => { if (e.key === 'Escape') onCerrar(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onCerrar]);
 
+  const handleImagen = (e) => {
+    const file = e.target.files[0];
+    setImagenError('');
+    if (!file) { setImagen(null); setPreview(anuncio?.imagen ?? null); return; }
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setImagenError('Solo se aceptan archivos JPG o PNG.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setImagenError('El archivo supera el límite de 5 MB.');
+      e.target.value = '';
+      return;
+    }
+    setImagen(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleEnviar = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (!titulo.trim())      { setErrorMsg('El título es requerido.'); return; }
+    if (!descripcion.trim()) { setErrorMsg('La descripción es requerida.'); return; }
+    if (!categoria)          { setErrorMsg('Selecciona una categoría.'); return; }
+
+    const fd = new FormData();
+    fd.append('titulo', titulo.trim());
+    fd.append('descripcion', descripcion.trim());
+    fd.append('categoria', categoria);
+    if (precio !== '') fd.append('precioRef', precio);
+    if (imagen) fd.append('imagen', imagen);
+
+    setCargando(true);
+    try {
+      if (modoEdicion) {
+        await api.patch(`/api/announcements/${anuncio._id}`, fd);
+      } else {
+        await api.post('/api/announcements', fd);
+      }
+      onGuardado();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error ?? 'Error al guardar el anuncio.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div
+      ref={overlayRef}
+      onClick={(e) => { if (e.target === overlayRef.current) onCerrar(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-text">
+            {modoEdicion ? 'Editar anuncio' : 'Nuevo anuncio'}
+          </h2>
+          <button onClick={onCerrar} className="text-text-muted hover:text-text transition-colors" aria-label="Cerrar">
+            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleEnviar} className="space-y-4">
+          {/* Título */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text">
+              Título <span className="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Ej. Instalación eléctrica residencial"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+          </div>
+
+          {/* Descripción */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text">
+              Descripción <span className="text-danger">*</span>
+            </label>
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              rows={3}
+              placeholder="Describe el servicio que ofreces…"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+          </div>
+
+          {/* Categoría */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text">
+              Categoría <span className="text-danger">*</span>
+            </label>
+            <select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
+            >
+              <option value="">Selecciona…</option>
+              {CATEGORIAS_ANUNCIO.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Precio */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text">
+              Precio referencial <span className="text-text-muted font-normal">(opcional)</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+              placeholder="Ej. 25.00"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+          </div>
+
+          {/* Imagen con preview */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text">
+              Imagen del servicio <span className="text-text-muted font-normal">(opcional · JPG/PNG · máx. 5 MB)</span>
+            </label>
+            {preview && (
+              <img
+                src={imgUrl(preview)}
+                alt="preview"
+                className="w-full h-32 object-cover rounded-lg border border-border"
+              />
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={handleImagen}
+              className="w-full text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+            />
+            {imagenError && (
+              <p className="text-xs text-danger">{imagenError}</p>
+            )}
+          </div>
+
+          {errorMsg && (
+            <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-2">
+              {errorMsg}
+            </p>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="submit"
+              disabled={cargando}
+              className="flex-1 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {cargando
+                ? (modoEdicion ? 'Guardando…' : 'Publicando…')
+                : (modoEdicion ? 'Guardar cambios' : 'Publicar anuncio')}
+            </button>
+            <button
+              type="button"
+              onClick={onCerrar}
+              className="flex-1 py-2.5 border border-border text-text-muted hover:text-text text-sm font-semibold rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function PestanaProveedor({ usuarioId }) {
+  const [recibidas, setRecibidas]       = useState([]);
+  const [loadRec, setLoadRec]           = useState(true);
+  const [anuncios, setAnuncios]         = useState([]);
+  const [loadAnu, setLoadAnu]           = useState(true);
+  const [modalAnuncio, setModalAnuncio] = useState(null); // null | false (nuevo) | anuncio obj (editar)
+
+  const cargarAnuncios = useCallback(() => {
+    setLoadAnu(true);
     api.get('/api/announcements', { params: { limit: 100 } })
       .then(({ data }) => {
         const propios = data.data.filter(
@@ -300,12 +517,38 @@ function PestanaProveedor({ usuarioId }) {
       .finally(() => setLoadAnu(false));
   }, [usuarioId]);
 
+  useEffect(() => {
+    api.get('/api/service-requests/received')
+      .then(({ data }) => setRecibidas(data.data))
+      .catch(() => setRecibidas([]))
+      .finally(() => setLoadRec(false));
+
+    cargarAnuncios();
+  }, [cargarAnuncios]);
+
   const actualizarSolicitud = useCallback((id, nueva) => {
     setRecibidas((prev) => prev.map((s) => (s._id === id ? { ...s, ...nueva } : s)));
   }, []);
 
+  const handleGuardado = useCallback(() => {
+    setModalAnuncio(null);
+    cargarAnuncios();
+  }, [cargarAnuncios]);
+
+  const handleEliminar = useCallback((id) => {
+    setAnuncios((prev) => prev.filter((a) => a._id !== id));
+  }, []);
+
   return (
     <div className="space-y-8">
+      {modalAnuncio !== null && (
+        <ModalAnuncio
+          anuncio={modalAnuncio || null}
+          onCerrar={() => setModalAnuncio(null)}
+          onGuardado={handleGuardado}
+        />
+      )}
+
       {/* Solicitudes recibidas */}
       <section>
         <h2 className="text-base font-semibold text-white/90 mb-3">Solicitudes recibidas</h2>
@@ -324,7 +567,18 @@ function PestanaProveedor({ usuarioId }) {
 
       {/* Mis anuncios */}
       <section>
-        <h2 className="text-base font-semibold text-white/90 mb-3">Mis anuncios</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-white/90">Mis anuncios</h2>
+          <button
+            onClick={() => setModalAnuncio(false)}
+            className="flex items-center gap-1.5 text-xs font-semibold bg-white text-primary hover:bg-white/90 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+            </svg>
+            Nuevo anuncio
+          </button>
+        </div>
         {loadAnu ? (
           <Skeleton />
         ) : anuncios.length === 0 ? (
@@ -332,7 +586,12 @@ function PestanaProveedor({ usuarioId }) {
         ) : (
           <div className="space-y-3">
             {anuncios.map((a) => (
-              <TarjetaAnuncio key={a._id} anuncio={a} />
+              <TarjetaAnuncio
+                key={a._id}
+                anuncio={a}
+                onEditar={(anuncio) => setModalAnuncio(anuncio)}
+                onEliminar={handleEliminar}
+              />
             ))}
           </div>
         )}
@@ -371,7 +630,7 @@ function PestanaCliente() {
 
 // ── Página principal ──────────────────────────────────────────────
 export default function DashboardPage() {
-  const { usuario, logout } = useAuth();
+  const { usuario } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -388,7 +647,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-primary">
-      <DashboardNav usuario={usuario} onLogout={logout} />
+      <NavbarDashboard />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Cabecera */}
@@ -445,12 +704,14 @@ export default function DashboardPage() {
               Explorar servicios
             </Link>
             {esCliente && !esProveedor && (
-              <Link
-                to="/registro-proveedor"
+              <button
+                onClick={() => navigate('/registro-proveedor', {
+                  state: { nombre: usuario?.nombre, telefono: usuario?.telefono },
+                })}
                 className="text-sm font-medium bg-white text-primary hover:bg-white/90 px-4 py-2 rounded-lg transition-colors"
               >
                 Convertirme en proveedor
-              </Link>
+              </button>
             )}
           </div>
         </section>

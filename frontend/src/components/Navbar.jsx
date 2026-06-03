@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ModalPerfil from './ModalPerfil';
+import { imgUrl } from '../lib/imageUrl';
 
 export default function Navbar() {
   const { usuario, logout } = useAuth();
-  const [abierto, setAbierto] = useState(false);
+  const [abierto, setAbierto]       = useState(false);
+  const [modalPerfil, setModalPerfil] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -17,6 +20,8 @@ export default function Navbar() {
   }, [abierto]);
 
   return (
+    <>
+    {modalPerfil && <ModalPerfil onCerrar={() => setModalPerfil(false)} />}
     <nav className="fixed top-0 inset-x-0 z-50 bg-surface border-b border-border h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
         {/* Logo */}
@@ -29,9 +34,9 @@ export default function Navbar() {
           <Link to="/" className="text-sm text-text-muted hover:text-text transition-colors">
             Explorar
           </Link>
-          <a href="/#como-funciona" className="text-sm text-text-muted hover:text-text transition-colors">
+          <Link to="/como-funciona" className="text-sm text-text-muted hover:text-text transition-colors">
             ¿Cómo funciona?
-          </a>
+          </Link>
         </div>
 
         {/* Acciones */}
@@ -44,7 +49,7 @@ export default function Navbar() {
               >
                 <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
                   {usuario.fotoPerfil
-                    ? <img src={usuario.fotoPerfil} alt={usuario.nombre} className="w-full h-full rounded-full object-cover" />
+                    ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full rounded-full object-cover" />
                     : usuario.nombre?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-text max-w-30 truncate">
@@ -64,6 +69,15 @@ export default function Navbar() {
                     <p className="font-semibold text-text truncate">{usuario.nombre}</p>
                     <p className="text-xs text-text-muted truncate">{usuario.email}</p>
                   </div>
+                  <button
+                    onClick={() => { setModalPerfil(true); setAbierto(false); }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-text hover:bg-background transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-text-muted" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clipRule="evenodd" />
+                    </svg>
+                    Mi perfil
+                  </button>
                   <Link
                     to="/dashboard"
                     onClick={() => setAbierto(false)}
@@ -106,5 +120,6 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }

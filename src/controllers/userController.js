@@ -1,4 +1,6 @@
-const User = require('../models/User');
+const User           = require('../models/User');
+const Announcement   = require('../models/Announcement');
+const ServiceRequest = require('../models/ServiceRequest');
 
 // ── RF-05 helper: GET /api/users/me ──────────────────────────────
 const getMe = async (req, res) => {
@@ -11,18 +13,32 @@ const getMe = async (req, res) => {
 };
 
 // ── PATCH /api/users/me ───────────────────────────────────────────
+// Acepta multipart/form-data (para fotoPerfil) o application/json (para datos).
+// Si se envían campos sensibles (nombre, telefono, password) se requiere passwordActual.
 const updateMe = async (req, res) => {
   try {
-    const { nombre, telefono } = req.body;
-    const cambios = {};
-    if (nombre) cambios.nombre = nombre.trim();
-    if (telefono) cambios.telefono = telefono;
+    const { nombre, telefono, password, passwordActual } = req.body;
+    const haySensibles = nombre || telefono || password;
 
-    const usuario = await User.findByIdAndUpdate(
-      req.usuario._id,
-      cambios,
-      { new: true, runValidators: true }
-    );
+    const usuario = await User.findById(req.usuario._id);
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    if (haySensibles) {
+      if (!passwordActual) {
+        return res.status(400).json({ error: 'La contraseña actual es requerida para actualizar los datos.' });
+      }
+      const valido = await usuario.compararPassword(passwordActual);
+      if (!valido) {
+        return res.status(401).json({ error: 'La contraseña actual es incorrecta.' });
+      }
+    }
+
+    if (nombre)   usuario.nombre    = nombre.trim();
+    if (telefono) usuario.telefono  = telefono;
+    if (password) usuario.password  = password; // pre-save hook hashea
+    if (req.file) usuario.fotoPerfil = `/uploads/${req.file.filename}`;
+
+    await usuario.save();
 
     res.json({ mensaje: 'Perfil actualizado', data: usuario });
   } catch (err) {
@@ -36,8 +52,6 @@ const updateMe = async (req, res) => {
 };
 
 // ── RF-05: POST /api/users/upload-docs ───────────────────────────
-// Sube documentos de verificación para un proveedor existente.
-// Multer ya procesó los archivos antes de llegar aquí.
 const subirDocumentos = async (req, res) => {
   try {
     if (!req.usuario.roles.includes('proveedor') || !req.usuario.providerData) {
@@ -76,14 +90,21 @@ const subirDocumentos = async (req, res) => {
 const getPerfilPublico = async (req, res) => {
   try {
     const usuario = await User.findById(req.params.id).select(
-      'nombre fotoPerfil roles providerData.categoria providerData.descripcion providerData.verificationStatus'
+      'nombre fotoPerfil roles activo providerData.categoria providerData.descripcion providerData.verificationStatus'
     );
 
     if (!usuario || !usuario.activo) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json({ data: usuario });
+    const [anuncios, solicitudesCompletadas] = await Promise.all([
+      Announcement.find({ proveedor: req.params.id, estado: 'activo' })
+        .select('titulo descripcion categoria precioRef imagenUrl createdAt')
+        .lean(),
+      ServiceRequest.countDocuments({ proveedor: req.params.id, estado: 'completada' }),
+    ]);
+
+    res.json({ data: { ...usuario.toJSON(), anuncios, solicitudesCompletadas } });
   } catch (err) {
     console.error('getPerfilPublico:', err);
     res.status(500).json({ error: 'Error interno del servidor' });

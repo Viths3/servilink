@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
+import NavbarDashboard from '../components/NavbarDashboard';
 
 const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados'];
 
@@ -16,35 +17,6 @@ const fmt = (fecha) =>
     day: 'numeric', month: 'short', year: 'numeric',
   });
 
-// ── Navbar ────────────────────────────────────────────────────────
-function AdminNav({ usuario, onLogout }) {
-  return (
-    <nav className="bg-primary border-b border-primary-dark h-16 flex items-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-xl font-bold text-white tracking-tight">ServiLink</Link>
-          <span className="text-xs font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full">
-            Admin
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white">
-              {usuario.nombre?.[0]?.toUpperCase() ?? '?'}
-            </div>
-            <span className="text-sm text-white/90 hidden sm:block font-medium">{usuario.nombre}</span>
-          </div>
-          <button
-            onClick={onLogout}
-            className="text-xs font-semibold text-white/80 hover:text-white border border-white/30 hover:border-white/60 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-    </nav>
-  );
-}
 
 // ── Piezas reutilizables ──────────────────────────────────────────
 function Skeleton({ filas = 3 }) {
@@ -563,7 +535,7 @@ function TabReportados() {
 
 // ── Página principal ──────────────────────────────────────────────
 export default function AdminPage() {
-  const { usuario, logout } = useAuth();
+  const { usuario } = useAuth();
   const [tabActiva, setTabActiva] = useState(0);
 
   if (!usuario?.roles?.includes('admin')) {
@@ -572,7 +544,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-primary">
-      <AdminNav usuario={usuario} onLogout={logout} />
+      <NavbarDashboard badge="Admin" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Cabecera */}

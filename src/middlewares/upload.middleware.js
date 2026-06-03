@@ -41,11 +41,17 @@ const upload = multer({
 
 // ── Middlewares exportados ────────────────────────────────────────
 
-// Para carga de documentos de cédula (2 archivos: anverso y reverso)
-const uploadDocs = upload.array('documentos', 2);
+// Para registro de proveedor: foto de perfil + documentos de cédula
+const uploadDocs = upload.fields([
+  { name: 'fotoPerfil', maxCount: 1 },
+  { name: 'documentos', maxCount: 2 },
+]);
 
 // Para foto de perfil (1 archivo)
 const uploadFoto = upload.single('fotoPerfil');
+
+// Para imagen de anuncio (1 archivo)
+const uploadImagen = upload.single('imagen');
 
 // Manejo de errores de Multer
 const handleUploadError = (err, req, res, next) => {
@@ -61,4 +67,4 @@ const handleUploadError = (err, req, res, next) => {
   next();
 };
 
-module.exports = { uploadDocs, uploadFoto, handleUploadError };
+module.exports = { uploadDocs, uploadFoto, uploadImagen, handleUploadError };

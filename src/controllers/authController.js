@@ -87,10 +87,10 @@ const registrarProveedor = async (req, res) => {
       return res.status(409).json({ error: 'Ya existe una cuenta con esa cédula' });
     }
 
-    // Obtener URLs de documentos subidos (Multer los agrega a req.files)
-    const documentos = req.files
-      ? req.files.map((f) => `/uploads/${f.filename}`)
-      : [];
+    // req.files es un objeto {fotoPerfil: [...], documentos: [...]} con upload.fields()
+    const fotoFile  = req.files?.fotoPerfil?.[0];
+    const fotoPerfil = fotoFile ? `/uploads/${fotoFile.filename}` : '';
+    const documentos = (req.files?.documentos ?? []).map((f) => `/uploads/${f.filename}`);
 
     // Crear usuario proveedor
     const usuario = new User({
@@ -99,6 +99,7 @@ const registrarProveedor = async (req, res) => {
       password,
       telefono,
       roles: ['proveedor'],
+      fotoPerfil,
       providerData: {
         cedula,
         categoria,

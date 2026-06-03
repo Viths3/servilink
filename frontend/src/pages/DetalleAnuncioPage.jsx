@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
+import { imgUrl } from '../lib/imageUrl';
 
 const CATEGORIAS = {
   electricidad: 'Electricidad',
@@ -43,7 +44,7 @@ function PanelProveedor({ proveedor }) {
     <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center text-center gap-3">
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
         {proveedor?.fotoPerfil
-          ? <img src={proveedor.fotoPerfil} alt={proveedor.nombre} className="w-full h-full rounded-full object-cover" />
+          ? <img src={imgUrl(proveedor.fotoPerfil)} alt={proveedor.nombre} className="w-full h-full rounded-full object-cover" />
           : inicial}
       </div>
 
