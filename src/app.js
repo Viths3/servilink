@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -8,20 +9,21 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos subidos como estáticos
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // ── RUTAS ─────────────────────────────────────────────────────────
 // Sprint 1: Auth
 app.use('/api/auth', require('./routes/auth.routes'));
 
 // Sprint 2: Usuarios, Verificación, Upgrade de rol
-// app.use('/api/users',    require('./routes/user.routes'));
-// app.use('/api/upgrade-requests', require('./routes/upgrade.routes'));
+app.use('/api/users', require('./routes/user.routes'));
+app.use('/api/upgrade-requests', require('./routes/upgrade.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 
 // Sprint 3: Anuncios, Solicitudes
 // app.use('/api/announcements',    require('./routes/announcement.routes'));
 // app.use('/api/service-requests', require('./routes/serviceRequest.routes'));
-
-// Sprint 4: Admin
-// app.use('/api/admin', require('./routes/admin.routes'));
 
 // ── RUTA BASE ─────────────────────────────────────────────────────
 app.get('/', (req, res) => {

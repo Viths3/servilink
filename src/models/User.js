@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ── ÍNDICES ───────────────────────────────────────────────────────
-userSchema.index({ email: 1 });
+
 userSchema.index({ 'providerData.cedula': 1 }, { sparse: true });
 userSchema.index({ roles: 1 });
 
