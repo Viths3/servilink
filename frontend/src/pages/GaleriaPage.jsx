@@ -371,49 +371,55 @@ export default function GaleriaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero / Buscador — Inspirado en Cuenca */}
-      <section className="pt-28 pb-12 px-4 bg-linear-to-br from-primary to-primary-dark text-white text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-          Conecta con los mejores profesionales de Cuenca
-        </h1>
-        <p className="text-primary-light text-sm sm:text-base mb-8 max-w-lg mx-auto">
-          La plataforma de servicios independientes de la Atenas del Ecuador
-        </p>
+      {/* Hero / Buscador — Con imagen de Cuenca */}
+      <section
+        className="pt-28 pb-12 px-4 text-white text-center relative bg-cover bg-center"
+        style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Cuenca_-_Catedral_de_la_Inmaculada_Concepci%C3%B3n.jpg/1280px-Cuenca_-_Catedral_de_la_Inmaculada_Concepci%C3%B3n.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-primary/80" />
+        <div className="relative z-10">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+            Conecta con los mejores profesionales de Cuenca
+          </h1>
+          <p className="text-primary-light text-sm sm:text-base mb-8 max-w-lg mx-auto">
+            La plataforma de servicios independientes de la Atenas del Ecuador
+          </p>
 
-        {/* Barra de búsqueda */}
-        <form
-          onSubmit={handleBuscar}
-          className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 mb-6"
-        >
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="¿Qué servicio buscas?"
-            className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
-          />
-          <select
-            value={catInput}
-            onChange={(e) => setCatInput(e.target.value)}
-            className="sm:w-44 px-4 py-3 rounded-lg text-text bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+          {/* Barra de búsqueda */}
+          <form
+            onSubmit={handleBuscar}
+            className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 mb-6"
           >
-            <option value="">Todas las categorías</option>
-            {CATEGORIAS.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="px-6 py-3 bg-white text-primary font-semibold text-sm rounded-lg hover:bg-primary-light hover:text-white transition-colors"
-          >
-            Buscar
-          </button>
-        </form>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="¿Qué servicio buscas?"
+              className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+            />
+            <select
+              value={catInput}
+              onChange={(e) => setCatInput(e.target.value)}
+              className="sm:w-44 px-4 py-3 rounded-lg text-text bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+            >
+              <option value="">Todas las categorías</option>
+              {CATEGORIAS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-white text-primary font-semibold text-sm rounded-lg hover:bg-primary-light hover:text-white transition-colors"
+            >
+              Buscar
+            </button>
+          </form>
 
-        {/* Frase inspiradora */}
-        <p className="text-sm text-primary-light/90 italic max-w-md mx-auto">
-          "Más de 60% de profesionales independientes en Cuenca ahora tienen voz digital"
-        </p>
+          {/* Frase inspiradora */}
+          <p className="text-sm text-primary-light/90 italic max-w-md mx-auto">
+            "Más de 60% de profesionales independientes en Cuenca ahora tienen voz digital"
+          </p>
+        </div>
       </section>
 
       {/* Chips de categoría con íconos de Flaticon */}
