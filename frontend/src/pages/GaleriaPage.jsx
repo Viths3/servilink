@@ -371,18 +371,28 @@ export default function GaleriaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero / Buscador — Con ilustración de Cuenca */}
+      {/* Hero / Buscador — Cuenca Colonial */}
       <section
-        className="pt-28 pb-12 px-4 text-white text-center relative bg-cover bg-center min-h-105"
-        style={{ backgroundImage: "url('/cuenca-catedral.png')" }}
+        className="pt-28 pb-12 px-4 text-white text-center relative min-h-105 overflow-hidden"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, #2D5016 0%, #1E3409 40%, #D97441 85%, #E8BC45 100%)',
+          backgroundAttachment: 'fixed'
+        }}
       >
-        <div className="absolute inset-0 bg-primary/60" />
+        {/* Patrón decorativo sutil */}
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: "url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
+        }} />
+
         <div className="relative z-10">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            Conecta con los mejores profesionales de Cuenca
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 drop-shadow-lg">
+            ServiLink: La voz de Cuenca
           </h1>
-          <p className="text-primary-light text-sm sm:text-base mb-8 max-w-lg mx-auto">
-            La plataforma de servicios independientes de la Atenas del Ecuador
+          <p className="text-lg sm:text-xl mb-2 max-w-2xl mx-auto drop-shadow-md font-light">
+            Conecta con profesionales verificados que transforman tu hogar
+          </p>
+          <p className="text-accent drop-shadow text-sm sm:text-base mb-8 max-w-lg mx-auto italic">
+            Patrimonio de la Humanidad merece servicios de excelencia
           </p>
 
           {/* Barra de búsqueda */}
@@ -395,12 +405,12 @@ export default function GaleriaPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="¿Qué servicio buscas?"
-              className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
             />
             <select
               value={catInput}
               onChange={(e) => setCatInput(e.target.value)}
-              className="sm:w-44 px-4 py-3 rounded-lg text-text bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="sm:w-44 px-4 py-3 rounded-lg text-text bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
             >
               <option value="">Todas las categorías</option>
               {CATEGORIAS.map((c) => (
@@ -409,15 +419,15 @@ export default function GaleriaPage() {
             </select>
             <button
               type="submit"
-              className="px-6 py-3 bg-white text-primary font-semibold text-sm rounded-lg hover:bg-primary-light hover:text-white transition-colors"
+              className="px-6 py-3 bg-white text-primary font-semibold text-sm rounded-lg hover:bg-accent hover:text-primary transition-colors"
             >
               Buscar
             </button>
           </form>
 
           {/* Frase inspiradora */}
-          <p className="text-sm text-primary-light/90 italic max-w-md mx-auto">
-            "Más de 60% de profesionales independientes en Cuenca ahora tienen voz digital"
+          <p className="text-sm text-white/80 italic max-w-md mx-auto drop-shadow">
+            "Empoderando profesionales, transformando comunidades"
           </p>
         </div>
       </section>
@@ -501,9 +511,9 @@ export default function GaleriaPage() {
       </main>
 
       {/* Footer — Identidad Cuencana */}
-      <footer className="border-t border-border py-8 text-center text-xs text-text-muted">
-        <p>© {new Date().getFullYear()} ServiLink — Cuenca, Ecuador 🏔️</p>
-        <p className="mt-1 text-primary-light">Conectando la Atenas del Ecuador</p>
+      <footer className="border-t border-border bg-gradient-to-r from-primary/5 to-secondary/5 py-8 text-center text-xs text-text-muted">
+        <p className="font-semibold text-primary">© {new Date().getFullYear()} ServiLink — Patrimonio de la Humanidad 🏛️</p>
+        <p className="mt-1 text-secondary/80">Empoderando profesionales desde Cuenca al mundo</p>
       </footer>
     </div>
   );

@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta inspirada en Cuenca, Ecuador — Atenas del Ecuador */
-  --color-primary:        #1B4F72;  /* Azul profundo — cielo andino de Cuenca */
-  --color-primary-dark:   #154360;
-  --color-primary-light:  #AED6F1;
-  --color-secondary:      #C0392B;  /* Rojo teja — tejados coloniales de Cuenca */
-  --color-accent:         #D4AC0D;  /* Dorado — cúpulas de la Catedral Nueva */
-  --color-background:     #F8F6F1;  /* Crema cálido — piedra colonial */
+  /* Paleta colonial de Cuenca, Ecuador — Patrimonio de la Humanidad */
+  --color-primary:        #2D5016;  /* Verde profundo — naturaleza andina de Cuenca */
+  --color-primary-dark:   #1E3409;
+  --color-primary-light:  #8BC34A;
+  --color-secondary:      #D97441;  /* Terracota — tejados coloniales auténticos */
+  --color-accent:         #E8BC45;  /* Dorado cálido — cúpulas de la Catedral Nueva */
+  --color-background:     #FFFBF5;  /* Crema cálido — piedra colonial luminosa */
   --color-surface:        #FFFFFF;
   --color-text:           #1A1A2E;
   --color-text-muted:     #6B7280;
-  --color-border:         #E5E0D8;
-  --color-danger:         #C0392B;
-  --color-success:        #1E8449;
+  --color-border:         #F0E8E0;
+  --color-danger:         #D97441;
+  --color-success:        #2D5016;
 }
 
 *,
