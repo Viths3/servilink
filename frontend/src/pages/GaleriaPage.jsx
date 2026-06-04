@@ -371,10 +371,10 @@ export default function GaleriaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero / Buscador — Con imagen de Cuenca */}
+      {/* Hero / Buscador — Con imagen de Cuenca Ecuador */}
       <section
         className="pt-28 pb-12 px-4 text-white text-center relative bg-cover bg-center"
-        style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Cuenca_-_Catedral_de_la_Inmaculada_Concepci%C3%B3n.jpg/1280px-Cuenca_-_Catedral_de_la_Inmaculada_Concepci%C3%B3n.jpg')" }}
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1583001931096-959e9a1a6223?w=1280&q=80')" }}
       >
         <div className="absolute inset-0 bg-primary/80" />
         <div className="relative z-10">
