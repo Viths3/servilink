@@ -129,7 +129,7 @@ export default function DateTimePicker({ value, onChange, min }) {
 
       {/* Dropdown */}
       {open && (
-        <div className="fixed z-[9999] bg-white border border-border rounded-xl shadow-xl p-4 space-y-3 w-72" style={{ top: position.top, left: position.left }}>
+        <div className="fixed z-9999 bg-white border border-border rounded-xl shadow-xl p-4 space-y-3 w-72" style={{ top: position.top, left: position.left }}>
 
           {/* Navegación de mes */}
           <div className="flex items-center justify-between">
