@@ -38,9 +38,7 @@ function IconChevronDown() {
 // min: ISO string or datetime-local string — fecha mínima seleccionable
 export default function DateTimePicker({ value, onChange, min }) {
   const [open, setOpen]       = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
   const containerRef          = useRef(null);
-  const buttonRef             = useRef(null);
 
   const minDate = min ? new Date(min) : new Date();
 
@@ -68,14 +66,6 @@ export default function DateTimePicker({ value, onChange, min }) {
     setTempDay(value ? base.getDate() : null);
     setTempHour(value ? base.getHours() : 9);
     setTempMin(value ? Math.floor(base.getMinutes() / 5) * 5 : 0);
-
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    }
     setOpen(true);
   };
 
@@ -113,10 +103,9 @@ export default function DateTimePicker({ value, onChange, min }) {
   const changeMin  = (d) => setTempMin((m) => (m + d + 60) % 60);
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="relative">
       {/* Trigger */}
       <button
-        ref={buttonRef}
         type="button"
         onClick={openPicker}
         className="w-full px-3 py-2 text-sm border border-border rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
@@ -129,7 +118,7 @@ export default function DateTimePicker({ value, onChange, min }) {
 
       {/* Dropdown */}
       {open && (
-        <div className="fixed z-9999 bg-white border border-border rounded-xl shadow-xl p-4 space-y-3 w-72" style={{ top: position.top, left: position.left }}>
+        <div className="absolute bottom-full left-0 z-50 mb-1 bg-white border border-border rounded-xl shadow-xl p-4 space-y-3 w-72">
 
           {/* Navegación de mes */}
           <div className="flex items-center justify-between">
