@@ -6,6 +6,15 @@ import Navbar from '../components/Navbar';
 import { imgUrl } from '../lib/imageUrl';
 import DateTimePicker from '../components/DateTimePicker';
 
+const ICONOS_CATEGORIA = {
+  electricidad: 'https://cdn-icons-png.flaticon.com/128/3103/3103594.png',
+  plomeria:     'https://cdn-icons-png.flaticon.com/128/8213/8213812.png',
+  medicina:     'https://cdn-icons-png.flaticon.com/128/2902/2902069.png',
+  carpinteria:  'https://cdn-icons-png.flaticon.com/128/1973/1973728.png',
+  asesoria:     'https://cdn-icons-png.flaticon.com/128/1469/1469884.png',
+  otro:         'https://cdn-icons-png.flaticon.com/128/10758/10758496.png',
+};
+
 const CATEGORIAS = {
   electricidad: 'Electricidad',
   plomeria:     'Plomería',

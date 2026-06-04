@@ -5,13 +5,22 @@ import { useAuth } from '../context/AuthContext';
 import ModalPerfil from '../components/ModalPerfil';
 import { imgUrl } from '../lib/imageUrl';
 
+const ICONOS_CATEGORIA = {
+  electricidad: 'https://cdn-icons-png.flaticon.com/128/3103/3103594.png',
+  plomeria:     'https://cdn-icons-png.flaticon.com/128/8213/8213812.png',
+  medicina:     'https://cdn-icons-png.flaticon.com/128/2902/2902069.png',
+  carpinteria:  'https://cdn-icons-png.flaticon.com/128/1973/1973728.png',
+  asesoria:     'https://cdn-icons-png.flaticon.com/128/1469/1469884.png',
+  otro:         'https://cdn-icons-png.flaticon.com/128/10758/10758496.png',
+};
+
 const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad', icon: 'https://cdn-icons-png.flaticon.com/128/3659/3659898.png' },
-  { value: 'plomeria',     label: 'Plomería', icon: 'https://cdn-icons-png.flaticon.com/128/2038/2038854.png' },
-  { value: 'medicina',     label: 'Medicina', icon: 'https://cdn-icons-png.flaticon.com/128/2382/2382533.png' },
-  { value: 'carpinteria',  label: 'Carpintería', icon: 'https://cdn-icons-png.flaticon.com/128/1998/1998342.png' },
-  { value: 'asesoria',     label: 'Asesoría', icon: 'https://cdn-icons-png.flaticon.com/128/1046/1046857.png' },
-  { value: 'otro',         label: 'Otro', icon: 'https://cdn-icons-png.flaticon.com/128/1875/1875688.png' },
+  { value: 'electricidad', label: 'Electricidad' },
+  { value: 'plomeria',     label: 'Plomería' },
+  { value: 'medicina',     label: 'Medicina' },
+  { value: 'carpinteria',  label: 'Carpintería' },
+  { value: 'asesoria',     label: 'Asesoría' },
+  { value: 'otro',         label: 'Otro' },
 ];
 
 // ── Logo SVG Cúpulas Catedral ────────────────────────────────────
@@ -157,9 +166,7 @@ function Navbar() {
 
 // ── Tarjeta de anuncio ────────────────────────────────────────────
 function AnuncioCard({ anuncio }) {
-  const categoriObj = CATEGORIAS.find((c) => c.value === anuncio.categoria);
-  const labelCategoria = categoriObj?.label ?? anuncio.categoria;
-  const iconoCategoria = categoriObj?.icon;
+  const labelCategoria = CATEGORIAS.find((c) => c.value === anuncio.categoria)?.label ?? anuncio.categoria;
   const fotos = anuncio.imagenes?.length ? anuncio.imagenes : anuncio.imagenUrl ? [anuncio.imagenUrl] : [];
   const [idx, setIdx]     = useState(0);
   const [paused, setPaused] = useState(false);
@@ -207,11 +214,7 @@ function AnuncioCard({ anuncio }) {
           </>
         ) : (
           <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
-            {iconoCategoria ? (
-              <img src={iconoCategoria} alt={labelCategoria} className="w-12 h-12" loading="lazy" />
-            ) : (
-              <span className="text-4xl font-bold text-gray-300">{labelCategoria?.[0]?.toUpperCase() ?? '?'}</span>
-            )}
+            <img src={ICONOS_CATEGORIA[anuncio.categoria]} alt={labelCategoria} className="w-12 h-12" loading="lazy" />
           </div>
         )}
       </div>
@@ -426,7 +429,7 @@ export default function GaleriaPage() {
                   : 'bg-surface text-text-muted border-border hover:border-primary hover:text-primary'
               }`}
             >
-              <img src={c.icon} alt={c.label} className="w-5 h-5" loading="lazy" />
+              <img src={ICONOS_CATEGORIA[c.value]} alt={c.label} className="w-5 h-5" loading="lazy" />
               {c.label}
             </button>
           ))}
