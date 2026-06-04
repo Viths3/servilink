@@ -54,10 +54,36 @@ function Vacio({ texto }) {
   );
 }
 
+// ── Bloque WhatsApp ───────────────────────────────────────────────
+function BloqueWhatsApp({ nombre, telefono }) {
+  if (!telefono) return null;
+  const telefonoSinSigno = telefono.replace(/^\+/, '');
+  const waUrl = `https://wa.me/${telefonoSinSigno}`;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border">
+      <p className="text-xs text-text-muted mb-2">Contacta a {nombre}:</p>
+      <a
+        href={waUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-700 px-3.5 py-2 rounded-lg transition-colors"
+      >
+        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-5.031 1.378c-1.87 1.246-3.045 3.006-3.045 5.411 0 1.748.505 3.427 1.46 4.773l-1.548 5.753 5.897-1.488c1.261.69 2.905 1.117 4.667 1.117h.004c5.192 0 9.439-4.153 9.439-9.331 0-2.491-.963-4.817-2.712-6.551-1.746-1.746-4.068-2.71-6.556-2.71"/>
+        </svg>
+        Abrir WhatsApp
+      </a>
+    </div>
+  );
+}
+
 
 // ── Tarjeta solicitud ENVIADA (vista cliente) ─────────────────────
 function TarjetaEnviada({ solicitud }) {
   const fecha = fmt(solicitud.fechaPropuesta);
+  const mostrarWhatsApp = ['aceptada', 'reagendada'].includes(solicitud.estado);
+
   return (
     <div className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
@@ -72,6 +98,12 @@ function TarjetaEnviada({ solicitud }) {
         )}
         {solicitud.fechaConfirmada && solicitud.estado === 'aceptada' && (
           <p className="text-xs text-success mt-1">Confirmada: {fmt(solicitud.fechaConfirmada)}</p>
+        )}
+        {mostrarWhatsApp && (
+          <BloqueWhatsApp
+            nombre={solicitud.proveedor?.nombre}
+            telefono={solicitud.proveedor?.telefono}
+          />
         )}
       </div>
       <BadgeEstado estado={solicitud.estado} />
@@ -128,6 +160,7 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
 
   const puedeAceptarRechazar = solicitud.estado === 'pendiente';
   const puedeReagendar = ['pendiente', 'aceptada'].includes(solicitud.estado);
+  const mostrarWhatsApp = ['aceptada', 'reagendada'].includes(solicitud.estado);
 
   return (
     <div className="bg-white border border-border rounded-xl p-4 space-y-3">
@@ -143,6 +176,12 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
           </p>
           {solicitud.anuncio?.titulo && (
             <p className="text-xs text-primary mt-0.5">Anuncio: {solicitud.anuncio.titulo}</p>
+          )}
+          {mostrarWhatsApp && (
+            <BloqueWhatsApp
+              nombre={solicitud.cliente?.nombre}
+              telefono={solicitud.cliente?.telefono}
+            />
           )}
         </div>
         <BadgeEstado estado={solicitud.estado} />

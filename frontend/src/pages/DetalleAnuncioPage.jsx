@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -184,7 +184,7 @@ function LoginWall() {
 }
 
 // ── Modal solicitud de servicio ───────────────────────────────────
-function ModalSolicitud({ anuncio, onCerrar }) {
+function ModalSolicitud({ anuncio, onCerrar, navigate }) {
   const overlayRef = useRef(null);
   const [descripcion, setDescripcion]   = useState('');
   const [fecha, setFecha]               = useState('');
@@ -226,8 +226,11 @@ function ModalSolicitud({ anuncio, onCerrar }) {
         fechaPropuesta: fecha,
       });
       setExito(true);
-      // Cierra el modal automáticamente después de 2.5 s
-      setTimeout(onCerrar, 2500);
+      // Redirige al dashboard después de 1.5 s
+      setTimeout(() => {
+        onCerrar();
+        navigate('/dashboard');
+      }, 1500);
     } catch (err) {
       setErrorMsg(err.response?.data?.error ?? 'Error al enviar la solicitud.');
     } finally {
@@ -263,13 +266,16 @@ function ModalSolicitud({ anuncio, onCerrar }) {
         </p>
 
         {exito ? (
-          <div className="flex items-start gap-3 bg-success/10 border border-success/30 rounded-xl px-4 py-3">
-            <svg className="w-5 h-5 text-success shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-            </svg>
-            <p className="text-sm text-success font-medium">
-              Solicitud enviada. El proveedor recibirá una notificación.
-            </p>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 bg-success/10 border border-success/30 rounded-xl px-4 py-3">
+              <svg className="w-5 h-5 text-success shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="text-sm text-success font-medium">¡Solicitud enviada!</p>
+                <p className="text-xs text-success/80 mt-0.5">Redirigiendo a tu dashboard…</p>
+              </div>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleEnviar} className="space-y-4">
@@ -334,6 +340,7 @@ function ModalSolicitud({ anuncio, onCerrar }) {
 export default function DetalleAnuncioPage() {
   const { id } = useParams();
   const { usuario } = useAuth();
+  const navigate = useNavigate();
 
   const [anuncio, setAnuncio]       = useState(null);
   const [loading, setLoading]       = useState(true);
@@ -363,7 +370,7 @@ export default function DetalleAnuncioPage() {
       <Navbar />
 
       {modalAbierto && anuncio && (
-        <ModalSolicitud anuncio={anuncio} onCerrar={() => setModal(false)} />
+        <ModalSolicitud anuncio={anuncio} onCerrar={() => setModal(false)} navigate={navigate} />
       )}
 
       <div className="pt-16">

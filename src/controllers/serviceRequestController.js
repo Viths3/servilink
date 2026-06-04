@@ -93,7 +93,7 @@ const enviarSolicitud = async (req, res) => {
 const getSolicitudesEnviadas = async (req, res) => {
   try {
     const solicitudes = await ServiceRequest.find({ cliente: req.usuario._id })
-      .populate('proveedor', 'nombre fotoPerfil')
+      .populate('proveedor', 'nombre fotoPerfil telefono')
       .populate('anuncio', 'titulo categoria')
       .sort({ createdAt: -1 });
 
