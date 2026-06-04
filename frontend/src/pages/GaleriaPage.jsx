@@ -6,12 +6,12 @@ import ModalPerfil from '../components/ModalPerfil';
 import { imgUrl } from '../lib/imageUrl';
 
 const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad', icon: '⚡' },
-  { value: 'plomeria',     label: 'Plomería', icon: '🔧' },
-  { value: 'medicina',     label: 'Medicina', icon: '➕' },
-  { value: 'carpinteria',  label: 'Carpintería', icon: '🪚' },
-  { value: 'asesoria',     label: 'Asesoría', icon: '⚖️' },
-  { value: 'otro',         label: 'Otro', icon: '✦' },
+  { value: 'electricidad', label: 'Electricidad', icon: 'https://cdn-icons-png.flaticon.com/128/3659/3659898.png' },
+  { value: 'plomeria',     label: 'Plomería', icon: 'https://cdn-icons-png.flaticon.com/128/2038/2038854.png' },
+  { value: 'medicina',     label: 'Medicina', icon: 'https://cdn-icons-png.flaticon.com/128/2382/2382533.png' },
+  { value: 'carpinteria',  label: 'Carpintería', icon: 'https://cdn-icons-png.flaticon.com/128/1998/1998342.png' },
+  { value: 'asesoria',     label: 'Asesoría', icon: 'https://cdn-icons-png.flaticon.com/128/1046/1046857.png' },
+  { value: 'otro',         label: 'Otro', icon: 'https://cdn-icons-png.flaticon.com/128/1875/1875688.png' },
 ];
 
 // ── Logo SVG Cúpulas Catedral ────────────────────────────────────
@@ -157,8 +157,9 @@ function Navbar() {
 
 // ── Tarjeta de anuncio ────────────────────────────────────────────
 function AnuncioCard({ anuncio }) {
-  const labelCategoria = CATEGORIAS.find((c) => c.value === anuncio.categoria)?.label ?? anuncio.categoria;
-  const inicialCat = (labelCategoria?.[0] ?? '?').toUpperCase();
+  const categoriObj = CATEGORIAS.find((c) => c.value === anuncio.categoria);
+  const labelCategoria = categoriObj?.label ?? anuncio.categoria;
+  const iconoCategoria = categoriObj?.icon;
   const fotos = anuncio.imagenes?.length ? anuncio.imagenes : anuncio.imagenUrl ? [anuncio.imagenUrl] : [];
   const [idx, setIdx]     = useState(0);
   const [paused, setPaused] = useState(false);
@@ -180,7 +181,7 @@ function AnuncioCard({ anuncio }) {
       to={`/anuncios/${anuncio._id}`}
       className="bg-surface rounded-xl border border-border hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group"
     >
-      {/* Imagen o placeholder con mini-carrusel en hover */}
+      {/* Imagen o placeholder con ícono de categoría */}
       <div
         className="relative overflow-hidden"
         onMouseEnter={() => setPaused(true)}
@@ -206,7 +207,11 @@ function AnuncioCard({ anuncio }) {
           </>
         ) : (
           <div className="w-full h-40 bg-gray-100 flex items-center justify-center">
-            <span className="text-4xl font-bold text-gray-300">{inicialCat}</span>
+            {iconoCategoria ? (
+              <img src={iconoCategoria} alt={labelCategoria} className="w-12 h-12" loading="lazy" />
+            ) : (
+              <span className="text-4xl font-bold text-gray-300">{labelCategoria?.[0]?.toUpperCase() ?? '?'}</span>
+            )}
           </div>
         )}
       </div>
@@ -408,7 +413,7 @@ export default function GaleriaPage() {
         </p>
       </section>
 
-      {/* Chips de categoría con íconos */}
+      {/* Chips de categoría con íconos de Flaticon */}
       <section id="galeria" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex flex-wrap gap-2">
           {CATEGORIAS.map((c) => (
@@ -421,7 +426,7 @@ export default function GaleriaPage() {
                   : 'bg-surface text-text-muted border-border hover:border-primary hover:text-primary'
               }`}
             >
-              <span className="text-base">{c.icon}</span>
+              <img src={c.icon} alt={c.label} className="w-5 h-5" loading="lazy" />
               {c.label}
             </button>
           ))}

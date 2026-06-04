@@ -11,12 +11,12 @@ const normalizeTel = (val) => {
 };
 
 const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad' },
-  { value: 'plomeria',     label: 'Plomería' },
-  { value: 'medicina',     label: 'Medicina' },
-  { value: 'carpinteria',  label: 'Carpintería' },
-  { value: 'asesoria',     label: 'Asesoría' },
-  { value: 'otro',         label: 'Otro' },
+  { value: 'electricidad', label: 'Electricidad', icon: 'https://cdn-icons-png.flaticon.com/128/3659/3659898.png' },
+  { value: 'plomeria',     label: 'Plomería', icon: 'https://cdn-icons-png.flaticon.com/128/2038/2038854.png' },
+  { value: 'medicina',     label: 'Medicina', icon: 'https://cdn-icons-png.flaticon.com/128/2382/2382533.png' },
+  { value: 'carpinteria',  label: 'Carpintería', icon: 'https://cdn-icons-png.flaticon.com/128/1998/1998342.png' },
+  { value: 'asesoria',     label: 'Asesoría', icon: 'https://cdn-icons-png.flaticon.com/128/1046/1046857.png' },
+  { value: 'otro',         label: 'Otro', icon: 'https://cdn-icons-png.flaticon.com/128/1875/1875688.png' },
 ];
 
 export default function RegistroProveedorPage() {
