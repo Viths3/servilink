@@ -4,6 +4,17 @@ import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
 import { imgUrl } from '../lib/imageUrl';
 
+// Logo SVG Cúpulas Catedral Nueva
+function LogoCatedral() {
+  return (
+    <svg className="w-5 h-5 inline-block" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="6" cy="7" r="4" fill="currentColor" opacity="0.9" />
+      <circle cx="14" cy="7" r="4" fill="currentColor" opacity="0.9" />
+      <circle cx="10" cy="4" r="5" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function Navbar() {
   const { usuario, logout } = useAuth();
   const [abierto, setAbierto]       = useState(false);
@@ -24,8 +35,9 @@ export default function Navbar() {
     {modalPerfil && <ModalPerfil onCerrar={() => setModalPerfil(false)} />}
     <nav className="fixed top-0 inset-x-0 z-50 bg-surface border-b border-border h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-primary tracking-tight">
+        {/* Logo con cúpulas de la Catedral */}
+        <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-primary tracking-tight hover:text-primary-dark transition-colors">
+          <LogoCatedral />
           ServiLink
         </Link>
 

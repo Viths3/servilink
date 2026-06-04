@@ -96,6 +96,7 @@ export default function RegistroClientePage() {
                 ServiLink
               </Link>
               <p className="text-text-muted text-sm mt-2">Crea tu cuenta gratuita</p>
+              <p className="text-xs text-primary/80 mt-1">Únete a la comunidad de servicios de Cuenca</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -132,7 +133,7 @@ export default function RegistroClientePage() {
                 value={form.telefono}
                 onChange={handleTelefonoChange}
                 onBlur={handleTelefonoBlur}
-                placeholder="+593991234567"
+                placeholder="ej: +593984338767"
                 required
               />
 

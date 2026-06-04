@@ -1,6 +1,37 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
+// ── SVG Skyline Catedral Nueva de Cuenca ────────────────────────
+function SkylineCuenca() {
+  return (
+    <svg className="w-full h-32 mb-6" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+      {/* Catedral Nueva — cúpulas prominentes */}
+      <circle cx="200" cy="40" r="35" fill="#D4AC0D" opacity="0.8" />
+      <circle cx="180" cy="45" r="20" fill="#D4AC0D" opacity="0.9" />
+      <circle cx="220" cy="45" r="20" fill="#D4AC0D" opacity="0.9" />
+      <path d="M 200 10 L 185 45 L 215 45 Z" fill="#1B4F72" />
+
+      {/* Edificios coloniales */}
+      <rect x="80" y="55" width="40" height="45" fill="#1B4F72" />
+      <rect x="85" y="60" width="8" height="8" fill="#AED6F1" />
+      <rect x="95" y="60" width="8" height="8" fill="#AED6F1" />
+      <rect x="105" y="60" width="8" height="8" fill="#AED6F1" />
+
+      <rect x="280" y="60" width="40" height="40" fill="#C0392B" opacity="0.7" />
+      <rect x="285" y="65" width="6" height="6" fill="#F8F6F1" />
+      <rect x="295" y="65" width="6" height="6" fill="#F8F6F1" />
+      <rect x="305" y="65" width="6" height="6" fill="#F8F6F1" />
+      <rect x="285" y="77" width="6" height="6" fill="#F8F6F1" />
+      <rect x="295" y="77" width="6" height="6" fill="#F8F6F1" />
+      <rect x="305" y="77" width="6" height="6" fill="#F8F6F1" />
+
+      {/* Montañas en fondo */}
+      <path d="M 0 100 L 50 40 L 100 100" fill="#AED6F1" opacity="0.3" />
+      <path d="M 300 100 L 350 50 L 400 100" fill="#AED6F1" opacity="0.3" />
+    </svg>
+  );
+}
+
 function PasoSimple({ numero, titulo, descripcion }) {
   return (
     <div className="flex gap-5">
@@ -32,17 +63,20 @@ export default function ComoFuncionaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* ── HERO ── */}
-      <section className="pt-28 pb-20 px-4 bg-primary text-white text-center">
-        <div className="max-w-2xl mx-auto space-y-5">
+      {/* ── HERO con Skyline de Cuenca ── */}
+      <section className="pt-28 pb-20 px-4 bg-linear-to-br from-primary to-primary-dark text-white text-center">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Skyline de Cuenca */}
+          <SkylineCuenca />
+
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
             ¿Cómo funciona ServiLink?
           </h1>
-          <p className="text-white/80 text-base sm:text-lg leading-relaxed">
-            En Cuenca, Ecuador, más del <span className="font-semibold text-white">60 % de trabajadores independientes</span> opera
-            sin herramientas digitales. La contratación de servicios como plomería, electricidad
-            o carpintería se da por referencias verbales o grupos de WhatsApp, sin ningún
-            mecanismo de verificación de identidad. ServiLink cambia eso.
+          <p className="text-white/85 text-base sm:text-lg leading-relaxed">
+            En Cuenca, miles de electricistas, plomeros, médicos y profesionales
+            independientes trabajan sin visibilidad digital. ServiLink cambia eso.
+            Conectamos la oferta de servicios verificados con la demanda real de
+            la ciudad, sin intermediarios.
           </p>
         </div>
       </section>

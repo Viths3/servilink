@@ -6,13 +6,25 @@ import ModalPerfil from '../components/ModalPerfil';
 import { imgUrl } from '../lib/imageUrl';
 
 const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad' },
-  { value: 'plomeria',     label: 'Plomería' },
-  { value: 'medicina',     label: 'Medicina' },
-  { value: 'carpinteria',  label: 'Carpintería' },
-  { value: 'asesoria',     label: 'Asesoría' },
-  { value: 'otro',         label: 'Otro' },
+  { value: 'electricidad', label: 'Electricidad', icon: '⚡' },
+  { value: 'plomeria',     label: 'Plomería', icon: '🔧' },
+  { value: 'medicina',     label: 'Medicina', icon: '➕' },
+  { value: 'carpinteria',  label: 'Carpintería', icon: '🪚' },
+  { value: 'asesoria',     label: 'Asesoría', icon: '⚖️' },
+  { value: 'otro',         label: 'Otro', icon: '✦' },
 ];
+
+// ── Logo SVG Cúpulas Catedral ────────────────────────────────────
+function LogoCatedral() {
+  return (
+    <svg className="w-5 h-5 inline-block" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 10C3 10 2 8 2 6C2 3 4 1 6 1C7 1 8 2 9 2C10 2 11 1 12 1C14 1 16 3 16 6C16 8 15 10 13 10"
+            fill="currentColor" className="text-primary" />
+      <path d="M5 10C4.5 10 4 12 4 13C4 14 5 15 6 15C7 15 8 14 9 14C10 14 11 15 12 15C13 15 14 14 14 13C14 12 13.5 10 13 10"
+            fill="currentColor" className="text-accent" opacity="0.7" />
+    </svg>
+  );
+}
 
 const LIMIT = 9;
 
@@ -38,8 +50,9 @@ function Navbar() {
     {modalPerfil && <ModalPerfil onCerrar={() => setModalPerfil(false)} />}
     <nav className="fixed top-0 inset-x-0 z-50 bg-surface border-b border-border h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-primary tracking-tight">
+        {/* Logo con cúpulas de la Catedral */}
+        <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-primary tracking-tight hover:text-primary-dark transition-colors">
+          <LogoCatedral />
           ServiLink
         </Link>
 
@@ -350,19 +363,19 @@ export default function GaleriaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero / Buscador */}
-      <section className="pt-28 pb-12 px-4 bg-primary text-white text-center">
+      {/* Hero / Buscador — Inspirado en Cuenca */}
+      <section className="pt-28 pb-12 px-4 bg-linear-to-br from-primary to-primary-dark text-white text-center">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-          Encuentra el servicio que necesitas
+          Conecta con los mejores profesionales de Cuenca
         </h1>
         <p className="text-primary-light text-sm sm:text-base mb-8 max-w-lg mx-auto">
-          Profesionales verificados en Cuenca, Ecuador.
+          La plataforma de servicios independientes de la Atenas del Ecuador
         </p>
 
         {/* Barra de búsqueda */}
         <form
           onSubmit={handleBuscar}
-          className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2"
+          className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 mb-6"
         >
           <input
             type="text"
@@ -388,21 +401,27 @@ export default function GaleriaPage() {
             Buscar
           </button>
         </form>
+
+        {/* Frase inspiradora */}
+        <p className="text-sm text-primary-light/90 italic max-w-md mx-auto">
+          "Más de 60% de profesionales independientes en Cuenca ahora tienen voz digital"
+        </p>
       </section>
 
-      {/* Chips de categoría */}
+      {/* Chips de categoría con íconos */}
       <section id="galeria" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex flex-wrap gap-2">
           {CATEGORIAS.map((c) => (
             <button
               key={c.value}
               onClick={() => handleChip(c.value)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border flex items-center gap-2 transition-colors ${
                 filtros.categoria === c.value
                   ? 'bg-primary text-white border-primary'
                   : 'bg-surface text-text-muted border-border hover:border-primary hover:text-primary'
               }`}
             >
+              <span className="text-base">{c.icon}</span>
               {c.label}
             </button>
           ))}
@@ -467,9 +486,10 @@ export default function GaleriaPage() {
         <Paginacion page={page} totalPages={totalPages} onChange={handlePagina} />
       </main>
 
-      {/* Footer mínimo */}
+      {/* Footer — Identidad Cuencana */}
       <footer className="border-t border-border py-8 text-center text-xs text-text-muted">
-        © {new Date().getFullYear()} ServiLink — Cuenca, Ecuador
+        <p>© {new Date().getFullYear()} ServiLink — Cuenca, Ecuador 🏔️</p>
+        <p className="mt-1 text-primary-light">Conectando la Atenas del Ecuador</p>
       </footer>
     </div>
   );

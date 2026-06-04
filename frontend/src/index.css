@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary:       #1B4F8A;
-  --color-primary-dark:  #153d6e;
-  --color-primary-light: #2d6abf;
-  --color-background:    #F8F9FA;
-  --color-surface:       #FFFFFF;
-  --color-text:          #1C2833;
-  --color-text-muted:    #6B7280;
-  --color-border:        #E5E7EB;
-  --color-danger:        #DC2626;
-  --color-success:       #16A34A;
+  /* Paleta inspirada en Cuenca, Ecuador — Atenas del Ecuador */
+  --color-primary:        #1B4F72;  /* Azul profundo — cielo andino de Cuenca */
+  --color-primary-dark:   #154360;
+  --color-primary-light:  #AED6F1;
+  --color-secondary:      #C0392B;  /* Rojo teja — tejados coloniales de Cuenca */
+  --color-accent:         #D4AC0D;  /* Dorado — cúpulas de la Catedral Nueva */
+  --color-background:     #F8F6F1;  /* Crema cálido — piedra colonial */
+  --color-surface:        #FFFFFF;
+  --color-text:           #1A1A2E;
+  --color-text-muted:     #6B7280;
+  --color-border:         #E5E0D8;
+  --color-danger:         #C0392B;
+  --color-success:        #1E8449;
 }
 
 *,
@@ -21,8 +24,8 @@
 
 body {
   margin: 0;
-  background-color: #F8F9FA;
-  color: #1C2833;
+  background-color: #F8F6F1;
+  color: #1A1A2E;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }

@@ -4,6 +4,17 @@ import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
 import { imgUrl } from '../lib/imageUrl';
 
+// Logo SVG Cúpulas Catedral Nueva
+function LogoCatedral() {
+  return (
+    <svg className="w-5 h-5 inline-block" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="6" cy="7" r="4" fill="currentColor" opacity="0.9" />
+      <circle cx="14" cy="7" r="4" fill="currentColor" opacity="0.9" />
+      <circle cx="10" cy="4" r="5" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function NavbarDashboard({ badge }) {
   const { usuario, logout } = useAuth();
   const [abierto, setAbierto]         = useState(false);
@@ -26,9 +37,10 @@ export default function NavbarDashboard({ badge }) {
       <nav className="bg-primary border-b border-primary-dark h-16 flex items-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
 
-          {/* Logo + badge opcional */}
+          {/* Logo con cúpulas + badge opcional */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-xl font-bold text-white tracking-tight">
+            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white tracking-tight hover:opacity-80 transition-opacity">
+              <LogoCatedral />
               ServiLink
             </Link>
             {badge && (
