@@ -477,8 +477,31 @@ export default function GaleriaPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: LIMIT }).map((_, i) => (
-              <div key={i} className="bg-surface rounded-xl border border-border h-52 animate-pulse" />
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="bg-surface rounded-xl border border-border overflow-hidden animate-pulse">
+                {/* Imagen placeholder */}
+                <div className="w-full h-40 bg-gray-200" />
+                {/* Categoría badge */}
+                <div className="px-5 pt-4 pb-2">
+                  <div className="h-5 w-20 bg-gray-200 rounded-full" />
+                </div>
+                <div className="px-5 pb-5 flex flex-col gap-3">
+                  {/* Título */}
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  {/* Descripción */}
+                  <div className="h-3 bg-gray-200 rounded w-full" />
+                  <div className="h-3 bg-gray-200 rounded w-5/6" />
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gray-200" />
+                      <div className="h-3 w-20 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-4 w-12 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : error ? (
@@ -493,11 +516,21 @@ export default function GaleriaPage() {
           </div>
         ) : anuncios.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-4xl mb-4">🔍</p>
-            <p className="text-text font-semibold text-lg mb-1">No hay anuncios disponibles</p>
-            <p className="text-text-muted text-sm">
-              Intenta con otra categoría o término de búsqueda.
+            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-text font-semibold text-lg mb-2">Aún no hay servicios publicados</p>
+            <p className="text-text-muted text-sm mb-6 max-w-md mx-auto">
+              {filtros.categoria ? (
+                <>¡Sé el primero en ofrecer tu servicio en esta categoría!</>
+              ) : (
+                <>Intenta con otra categoría o término de búsqueda.</>
+              )}
             </p>
+            <Link
+              to="/registro-proveedor"
+              className="inline-block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              Publicar mi servicio
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -511,7 +544,7 @@ export default function GaleriaPage() {
       </main>
 
       {/* Footer — Identidad Cuencana */}
-      <footer className="border-t border-border bg-gradient-to-r from-primary/5 to-secondary/5 py-8 text-center text-xs text-text-muted">
+      <footer className="border-t border-border bg-linear-to-r from-primary/5 to-secondary/5 py-8 text-center text-xs text-text-muted">
         <p className="font-semibold text-primary">© {new Date().getFullYear()} ServiLink — Patrimonio de la Humanidad 🏛️</p>
         <p className="mt-1 text-secondary/80">Empoderando profesionales desde Cuenca al mundo</p>
       </footer>
