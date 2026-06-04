@@ -8,7 +8,7 @@ const {
   logout,
 } = require('../controllers/authController');
 
-const { uploadDocs, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadDocs, uploadFoto, handleUploadError } = require('../middlewares/upload.middleware');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 /**
@@ -27,15 +27,16 @@ const authMiddleware = require('../middlewares/auth.middleware');
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [nombre, email, password, telefono]
+ *             required: [nombre, email, password, telefono, fotoPerfil]
  *             properties:
  *               nombre:   { type: string, example: María López }
  *               email:    { type: string, format: email, example: maria@example.com }
  *               password: { type: string, minLength: 8, example: password123 }
  *               telefono: { type: string, example: '+593991234567' }
+ *               fotoPerfil: { type: string, format: binary, description: JPG/PNG máx 5 MB }
  *     responses:
  *       201:
  *         description: Cuenta creada. Devuelve token JWT y datos del usuario.
@@ -48,7 +49,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
  *                 token:    { type: string }
  *                 usuario:  { $ref: '#/components/schemas/User' }
  *       400:
- *         description: Campos faltantes o formato inválido.
+ *         description: Campos faltantes, formato inválido o archivo no permitido.
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
@@ -58,7 +59,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/register', registrarCliente);
+router.post('/register', uploadFoto, handleUploadError, registrarCliente);
 
 /**
  * @openapi

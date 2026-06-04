@@ -26,12 +26,16 @@ const registrarCliente = async (req, res) => {
       return res.status(409).json({ error: 'Ya existe una cuenta con ese correo' });
     }
 
+    // Procesar foto de perfil si existe
+    const fotoPerfil = req.file ? `/uploads/${req.file.filename}` : '';
+
     // Crear usuario
     const usuario = new User({
       nombre,
       email,
       password,
       telefono,
+      fotoPerfil,
       roles: ['cliente'],
     });
 
@@ -46,6 +50,7 @@ const registrarCliente = async (req, res) => {
         id: usuario._id,
         nombre: usuario.nombre,
         email: usuario.email,
+        fotoPerfil: usuario.fotoPerfil,
         roles: usuario.roles,
       },
     });
