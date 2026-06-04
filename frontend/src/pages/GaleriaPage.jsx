@@ -371,12 +371,12 @@ export default function GaleriaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero / Buscador — Con imagen de Cuenca Ecuador */}
+      {/* Hero / Buscador — Con ilustración de Cuenca */}
       <section
-        className="pt-28 pb-12 px-4 text-white text-center relative bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1583001931096-959e9a1a6223?w=1280&q=80')" }}
+        className="pt-28 pb-12 px-4 text-white text-center relative bg-cover bg-center min-h-105"
+        style={{ backgroundImage: "url('/cuenca-catedral.png')" }}
       >
-        <div className="absolute inset-0 bg-primary/80" />
+        <div className="absolute inset-0 bg-primary/60" />
         <div className="relative z-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
             Conecta con los mejores profesionales de Cuenca
