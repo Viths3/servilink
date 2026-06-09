@@ -4,13 +4,7 @@ import api from '../lib/axios';
 import Navbar from '../components/Navbar';
 import InputCategorias from '../components/InputCategorias';
 import { CATEGORIAS } from '../lib/categorias';
-
-const normalizeTel = (val) => {
-  if (!val) return '+593';
-  if (/^0\d/.test(val)) return '+593' + val.slice(1);
-  if (!val.startsWith('+593')) return '+593';
-  return val;
-};
+import { normalizeTel } from '../lib/telefono';
 
 export default function RegistroProveedorPage() {
   const { state: prefill } = useLocation();
