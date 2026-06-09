@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL ?? '';
+const BASE = '';
 
 export const imgUrl = (path) => {
   if (!path || path === 'REMOVED_BY_MODERATOR') return null;
