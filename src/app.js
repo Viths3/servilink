@@ -38,9 +38,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // ── MANEJO DE RUTAS NO ENCONTRADAS ───────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: 'Ruta no encontrada' });
-});
+// Comentado en producción: el 404 lo maneja React Router del frontend
+// y server.js sirve index.html para todas las rutas no API
+// app.use((req, res) => {
+//   res.status(404).json({ error: 'Ruta no encontrada' });
+// });
 
 // ── MANEJO GLOBAL DE ERRORES ─────────────────────────────────────
 app.use((err, req, res, next) => {
