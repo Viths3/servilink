@@ -35,6 +35,8 @@ const listarAnuncios = async (req, res) => {
       Announcement.countDocuments(filtro),
     ]);
 
+    console.log('DEBUG listarAnuncios - total BD:', total, '- anuncios encontrados:', anuncios.length, '- filtro:', JSON.stringify(filtro));
+
     res.json({
       data: anuncios,
       total,
