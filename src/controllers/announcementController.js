@@ -9,7 +9,7 @@ const listarAnuncios = async (req, res) => {
     const filtro = { estado: 'activo' };
 
     if (categoria) {
-      const categoriasValidas = ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'otro'];
+      const categoriasValidas = ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'jardineria', 'limpieza', 'pintura', 'mecanica', 'diseno', 'fotografia', 'otro'];
       if (!categoriasValidas.includes(categoria)) {
         return res.status(400).json({ error: 'Categoría inválida' });
       }
