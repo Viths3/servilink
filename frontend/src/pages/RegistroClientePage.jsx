@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import Navbar from '../components/Navbar';
+import { normalizeTel } from '../lib/telefono';
 
 export default function RegistroClientePage() {
   const { login } = useAuth();
@@ -33,12 +34,10 @@ export default function RegistroClientePage() {
   };
 
   const handleTelefonoBlur = () => {
-    setForm((f) => {
-      const tel = f.telefono;
-      if (/^0\d/.test(tel)) return { ...f, telefono: '+593' + tel.slice(1) };
-      if (!tel.startsWith('+593')) return { ...f, telefono: '+593' };
-      return f;
-    });
+    setForm((f) => ({
+      ...f,
+      telefono: normalizeTel(f.telefono),
+    }));
   };
 
   const handleFoto = (e) => {
@@ -70,7 +69,7 @@ export default function RegistroClientePage() {
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) =>
-        fd.append(k, k === 'telefono' && /^0\d/.test(v) ? '+593' + v.slice(1) : v)
+        fd.append(k, k === 'telefono' ? normalizeTel(v) : v)
       );
       fd.append('fotoPerfil', fotoPerfil);
       await api.post('/api/auth/register', fd);

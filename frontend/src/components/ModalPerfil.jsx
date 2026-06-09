@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
+import { normalizeTel } from '../lib/telefono';
 
 export default function ModalPerfil({ onCerrar }) {
   const { usuario, actualizarUsuario } = useAuth();
@@ -29,14 +30,6 @@ export default function ModalPerfil({ onCerrar }) {
   const validarEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
-  };
-
-  const normalizeTel = (val) => {
-    if (!val) return '+593';
-    const numeros = val.replace(/\D/g, '');
-    if (numeros.startsWith('0')) return '+593' + numeros.slice(1);
-    if (numeros.startsWith('593')) return '+' + numeros;
-    return '+593' + numeros;
   };
 
   const validarTelefono = (tel) => {
