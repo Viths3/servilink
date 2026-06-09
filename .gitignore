@@ -11,8 +11,8 @@ npm-debug.log*
 uploads/
 
 # Build frontend (Fase 3)
-frontend/dist/
-frontend/build/
+# frontend/dist/ — comentado para incluir build en Railway
+# frontend/build/
 
 # Sistema operativo
 .DS_Store
