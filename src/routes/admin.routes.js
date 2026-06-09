@@ -11,6 +11,7 @@ const {
   toggleUsuario,
   getAnunciosReportados,
   gestionarAnuncioReportado,
+  eliminarFotoPerfilUsuario,
 } = require('../controllers/adminController');
 
 /**
@@ -408,5 +409,25 @@ router.get('/users', getUsuarios);
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 router.patch('/users/:id', toggleUsuario);
+
+/**
+ * @openapi
+ * /api/admin/users/{id}/remove-photo:
+ *   patch:
+ *     tags: [Admin]
+ *     summary: Eliminar foto de perfil de un usuario
+ *     description: Marca la foto de perfil como removida por moderación.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Foto de perfil eliminada.
+ */
+router.patch('/users/:id/remove-photo', eliminarFotoPerfilUsuario);
 
 module.exports = router;

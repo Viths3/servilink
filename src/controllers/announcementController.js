@@ -118,7 +118,9 @@ const editarAnuncio = async (req, res) => {
       return res.status(404).json({ error: 'Anuncio no encontrado' });
     }
 
-    if (anuncio.proveedor.toString() !== req.usuario._id.toString()) {
+    const esAdmin = req.usuario.roles.includes('admin');
+    const esProveedor = anuncio.proveedor.toString() === req.usuario._id.toString();
+    if (!esAdmin && !esProveedor) {
       return res.status(403).json({ error: 'No tienes permiso para editar este anuncio' });
     }
 
@@ -138,7 +140,10 @@ const editarAnuncio = async (req, res) => {
     if (imagenesEliminar) {
       let aEliminar = [];
       try { aEliminar = JSON.parse(imagenesEliminar); } catch { /* ignorar */ }
-      imagenesActuales = imagenesActuales.filter((u) => !aEliminar.includes(u));
+      // Reemplazar imágenes eliminadas por 'REMOVED_BY_MODERATOR' en lugar de filtrarlas
+      imagenesActuales = imagenesActuales.map((img) =>
+        aEliminar.includes(img) ? 'REMOVED_BY_MODERATOR' : img
+      );
     }
     const nuevasImagenes = (req.files ?? []).map((f) => `/uploads/${f.filename}`);
     cambios.imagenes = [...imagenesActuales, ...nuevasImagenes];

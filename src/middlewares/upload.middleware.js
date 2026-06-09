@@ -22,12 +22,38 @@ const storage = multer.diskStorage({
 
 // ── Filtro de tipos de archivo ────────────────────────────────────
 const fileFilter = (req, file, cb) => {
-  const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-  if (tiposPermitidos.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Tipo de archivo no permitido. Solo JPG, PNG o PDF.'), false);
+  // Tipos MIME permitidos
+  const tiposImagenPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const tiposDocumentoPermitidos = ['application/pdf'];
+  const todosPermitidos = [...tiposImagenPermitidos, ...tiposDocumentoPermitidos];
+
+  // Validar tipo MIME
+  if (!todosPermitidos.includes(file.mimetype)) {
+    return cb(new Error('Tipo de archivo no permitido. Solo JPG, PNG, WebP o PDF.'), false);
   }
+
+  // Validar extensión
+  const ext = path.extname(file.originalname).toLowerCase();
+  const extensionesPermitidas = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+  if (!extensionesPermitidas.includes(ext)) {
+    return cb(new Error('Extensión de archivo no permitida.'), false);
+  }
+
+  // Validar que el nombre no contenga caracteres peligrosos
+  if (/[<>:"|?*\\]|\.{2,}/.test(file.originalname)) {
+    return cb(new Error('Nombre de archivo contiene caracteres no permitidos.'), false);
+  }
+
+  // Validar que no sea un ejecutable disfrazado
+  const nombreBajo = file.originalname.toLowerCase();
+  const archivosProhibidos = ['.exe', '.bat', '.cmd', '.com', '.scr', '.vbs', '.js', '.html', '.htm', '.php', '.asp', '.aspx', '.jsp', '.cfm', '.cgi'];
+  for (const prohibido of archivosProhibidos) {
+    if (nombreBajo.endsWith(prohibido)) {
+      return cb(new Error('Tipo de archivo no permitido.'), false);
+    }
+  }
+
+  cb(null, true);
 };
 
 // ── Instancia de Multer ───────────────────────────────────────────

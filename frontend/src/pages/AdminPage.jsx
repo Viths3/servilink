@@ -1,7 +1,9 @@
+/* cSpell:disable */
 import { useEffect, useState, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
+import { imgUrl } from '../lib/imageUrl';
 import NavbarDashboard from '../components/NavbarDashboard';
 
 const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados'];
@@ -46,7 +48,7 @@ function ErrorMsg({ texto }) {
 }
 
 // ── Tab: Estadísticas ─────────────────────────────────────────────
-function TabEstadisticas() {
+function TabEstadisticas({ onNavigate }) {
   const [stats, setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
@@ -68,18 +70,24 @@ function TabEstadisticas() {
     (stats.solicitudes.porEstado.reagendada ?? 0);
 
   const tarjetas = [
-    { label: 'Total usuarios',              valor: stats.usuarios.total,                   sub: `${stats.usuarios.activos} activos` },
-    { label: 'Proveedores',                 valor: stats.usuarios.proveedores,              sub: `${stats.usuarios.clientes} clientes` },
-    { label: 'Verificaciones pendientes',   valor: stats.pendientes.verificaciones,         sub: `${stats.pendientes.upgrades} upgrades` },
-    { label: 'Anuncios con reportes',       valor: stats.anuncios.conReportesActivos,       sub: `${stats.anuncios.suspendidos} suspendidos` },
+    { label: 'Total usuarios',              valor: stats.usuarios.total,                   sub: `${stats.usuarios.activos} activos`, tabIndex: 2 },
+    { label: 'Proveedores',                 valor: stats.usuarios.proveedores,              sub: `${stats.usuarios.clientes} clientes`, tabIndex: 2 },
+    { label: 'Verificaciones pendientes',   valor: stats.pendientes.verificaciones,         sub: `${stats.pendientes.upgrades} upgrades`, tabIndex: 1 },
+    { label: 'Anuncios con reportes',       valor: stats.anuncios.conReportesActivos,       sub: `${stats.anuncios.suspendidos} suspendidos`, tabIndex: 3 },
     { label: 'Solicitudes activas',         valor: solicitudesActivas,                      sub: `${stats.solicitudes.total} total` },
   ];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {tarjetas.map(({ label, valor, sub }) => (
-          <div key={label} className="bg-white rounded-xl p-5 space-y-1 shadow-sm">
+        {tarjetas.map(({ label, valor, sub, tabIndex }) => (
+          <div
+            key={label}
+            onClick={() => tabIndex !== undefined && onNavigate(tabIndex)}
+            className={`bg-white rounded-xl p-5 space-y-1 shadow-sm ${
+              tabIndex !== undefined ? 'cursor-pointer hover:shadow-md hover:ring-2 hover:ring-primary transition-all' : ''
+            }`}
+          >
             <p className="text-2xl font-bold text-primary">{valor}</p>
             <p className="text-xs font-semibold text-text">{label}</p>
             <p className="text-xs text-text-muted">{sub}</p>
@@ -248,17 +256,353 @@ function TabVerificaciones() {
   );
 }
 
-// ── Tab: Usuarios ─────────────────────────────────────────────────
-function FilaUsuario({ usuario: u, onToggle }) {
+// ── Modal editar anuncio ──────────────────────────────────────
+function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
+  const [titulo, setTitulo] = useState(anuncio.titulo);
+  const [descripcion, setDescripcion] = useState(anuncio.descripcion);
+  const [categoria, setCategoria] = useState(anuncio.categoria);
+  const [precioRef, setPrecioRef] = useState(anuncio.precioRef ?? '');
   const [cargando, setCargando] = useState(false);
-  const [error, setError]       = useState('');
+  const [error, setError] = useState('');
+  const [exito, setExito] = useState('');
+  const [imagenesActuales, setImagenesActuales] = useState(anuncio.imagenes ?? [anuncio.imagenUrl].filter(Boolean));
+  const [imagenesEliminar, setImagenesEliminar] = useState([]);
+  const [imagenesNuevas, setImagenesNuevas] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [fotoFullscreen, setFotoFullscreen] = useState(null);
 
-  const toggle = async () => {
+  const validarArchivo = (archivo) => {
+    // Validar tipo MIME
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(archivo.type)) {
+      setError(`❌ ${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
+      return false;
+    }
+
+    // Validar extensión
+    const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
+    const extension = archivo.name.split('.').pop().toLowerCase();
+    if (!extensionesPermitidas.includes(extension)) {
+      setError(`❌ ${archivo.name}: Extensión no permitida`);
+      return false;
+    }
+
+    // Validar tamaño (máx 5MB)
+    const tamanioMaxMB = 5;
+    if (archivo.size > tamanioMaxMB * 1024 * 1024) {
+      setError(`❌ ${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
+      return false;
+    }
+
+    // Validar que no contenga caracteres peligrosos en el nombre
+    if (/[<>:"|?*\\/]/.test(archivo.name)) {
+      setError(`❌ ${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleAddImages = (e) => {
     setError('');
+    const archivos = Array.from(e.target.files);
+    const archivosValidos = archivos.filter(validarArchivo);
+
+    if (archivosValidos.length === 0) {
+      e.target.value = '';
+      return;
+    }
+
+    const nuevas = [...imagenesNuevas, ...archivosValidos];
+    const prevs = nuevas.map(f => URL.createObjectURL(f));
+    setImagenesNuevas(nuevas);
+    setPreviews(prevs);
+    e.target.value = '';
+  };
+
+  const eliminarImagenActual = (idx) => {
+    const imagenUrl = imagenesActuales[idx];
+    setImagenesEliminar([...imagenesEliminar, imagenUrl]);
+    setImagenesActuales(imagenesActuales.filter((_, i) => i !== idx));
+  };
+
+  const eliminarImagenNueva = (idx) => {
+    const nuevas = imagenesNuevas.filter((_, i) => i !== idx);
+    const prevs = nuevas.map(f => URL.createObjectURL(f));
+    setImagenesNuevas(nuevas);
+    setPreviews(prevs);
+  };
+
+  const guardar = async () => {
+    setError('');
+    setExito('');
+
+    if (!titulo.trim()) {
+      setError('El título es requerido.');
+      return;
+    }
+
+    if (!descripcion.trim()) {
+      setError('La descripción es requerida.');
+      return;
+    }
+
     setCargando(true);
     try {
-      const { data } = await api.patch(`/api/admin/users/${u._id}`, { activo: !u.activo });
-      onToggle(u._id, data.data.activo);
+      const fd = new FormData();
+      fd.append('titulo', titulo.trim());
+      fd.append('descripcion', descripcion.trim());
+      fd.append('categoria', categoria);
+      if (precioRef) fd.append('precioRef', Number(precioRef));
+
+      if (imagenesEliminar.length > 0) {
+        fd.append('imagenesEliminar', JSON.stringify(imagenesEliminar));
+      }
+
+      imagenesNuevas.forEach(img => {
+        fd.append('imagenes', img);
+      });
+
+      const { data } = await api.patch(`/api/announcements/${anuncio._id}`, fd);
+      setExito('✅ Anuncio actualizado correctamente');
+      setTimeout(() => {
+        onGuardado(data.data);
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al actualizar el anuncio.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={(e) => { if (e.target.className.includes('fixed')) onCerrar(); }}
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 px-4"
+    >
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Cabecera */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+          <div>
+            <h3 className="text-lg font-bold text-primary">Editar anuncio</h3>
+            <p className="text-xs text-text-muted mt-0.5">{usuario?.nombre}</p>
+          </div>
+          <button
+            onClick={onCerrar}
+            className="text-text-muted hover:text-text transition-colors"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Título */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">Título del anuncio *</label>
+            <input
+              type="text"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              maxLength="100"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
+            />
+            <p className="text-xs text-text-muted mt-1">{titulo.length}/100 caracteres</p>
+          </div>
+
+          {/* Descripción */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">Descripción *</label>
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              rows={4}
+              maxLength="500"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
+            />
+            <p className="text-xs text-text-muted mt-1">{descripcion.length}/500 caracteres</p>
+          </div>
+
+          {/* Categoría y Precio - Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">Categoría *</label>
+              <select
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
+              >
+                <option value="">Selecciona categoría</option>
+                <option value="electricidad">Electricidad</option>
+                <option value="plomeria">Plomería</option>
+                <option value="medicina">Medicina</option>
+                <option value="carpinteria">Carpintería</option>
+                <option value="asesoria">Asesoría</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">Precio referencial ($)</label>
+              <input
+                type="number"
+                value={precioRef}
+                onChange={(e) => setPrecioRef(e.target.value)}
+                min="0"
+                step="0.01"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
+              />
+            </div>
+          </div>
+
+          {/* Imágenes actuales */}
+          {imagenesActuales.length > 0 && (
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">Imágenes actuales</label>
+              <div className="flex flex-wrap gap-3">
+                {imagenesActuales.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={imgUrl(img)}
+                      alt={`anuncio-${idx}`}
+                      onClick={() => setFotoFullscreen(img)}
+                      className="w-16 h-16 rounded-lg object-cover cursor-pointer"
+                    />
+                    <button
+                      onClick={() => eliminarImagenActual(idx)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-danger rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger-dark"
+                      title="Eliminar imagen"
+                    >
+                      <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Nuevas imágenes */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">Agregar imágenes</label>
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png"
+              onChange={handleAddImages}
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text"
+            />
+            {previews.length > 0 && (
+              <div className="flex flex-wrap gap-3 mt-3">
+                {previews.map((preview, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={preview}
+                      alt={`preview-${idx}`}
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                    <button
+                      onClick={() => eliminarImagenNueva(idx)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-danger rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger-dark"
+                      title="Eliminar imagen"
+                    >
+                      <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Mensajes */}
+          {error && (
+            <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-2">{error}</p>
+          )}
+          {exito && (
+            <p className="text-xs text-success bg-success/5 border border-success/20 rounded px-3 py-2">{exito}</p>
+          )}
+
+          {/* Botones */}
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={guardar}
+              disabled={cargando || !titulo.trim() || !descripcion.trim()}
+              className="flex-1 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cargando ? 'Guardando…' : 'Guardar cambios'}
+            </button>
+            <button
+              onClick={onCerrar}
+              disabled={cargando}
+              className="flex-1 py-2.5 border border-border text-text hover:bg-background rounded-lg transition-colors disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Lightbox para ver imagen a tamaño completo */}
+      {fotoFullscreen && (
+        <div
+          onClick={() => setFotoFullscreen(null)}
+          className="fixed inset-0 z-101 bg-black/80 flex items-center justify-center p-4"
+        >
+          <div className="relative max-w-2xl max-h-[90vh]">
+            <img
+              src={imgUrl(fotoFullscreen)}
+              alt="foto-completa"
+              className="w-full h-full object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setFotoFullscreen(null)}
+              className="absolute -top-8 right-0 text-white hover:text-gray-300 transition-colors"
+              aria-label="Cerrar"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Modal detalle usuario ──────────────────────────────────────────
+function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
+  const [detalles, setDetalles] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [anuncioEditando, setAnuncioEditando] = useState(null);
+  const [citas, setCitas] = useState(null);
+  const [fotoFullscreen, setFotoFullscreen] = useState(null);
+  const [usuarioActualizado, setUsuarioActualizado] = useState(usuario);
+
+  useEffect(() => {
+    setLoading(true);
+    const esProveedor = usuario.roles?.includes('proveedor');
+    const esCliente = usuario.roles?.includes('cliente');
+
+    Promise.all([
+      api.get(`/api/users/${usuario._id}/public`).then(({ data }) => data.data),
+      esCliente ? api.get(`/api/service-requests/sent`).then(({ data }) => data.data) : Promise.resolve(null),
+    ])
+      .then(([det, cit]) => {
+        setDetalles(det);
+        setCitas(cit);
+      })
+      .catch(() => setError('No se pudieron cargar los detalles.'))
+      .finally(() => setLoading(false));
+  }, [usuario._id, usuario.roles]);
+
+  const toggle = async () => {
+    setCargando(true);
+    try {
+      const { data } = await api.patch(`/api/admin/users/${usuario._id}`, { activo: !usuario.activo });
+      onToggle(usuario._id, data.data.activo);
     } catch (err) {
       setError(err.response?.data?.error ?? 'Error al actualizar.');
     } finally {
@@ -266,50 +610,356 @@ function FilaUsuario({ usuario: u, onToggle }) {
     }
   };
 
+  const eliminarImagenDeAnuncio = async (anuncioId, imagenUrl) => {
+    if (!confirm('¿Eliminar esta imagen del anuncio?')) return;
+    try {
+      await api.patch(`/api/announcements/${anuncioId}`, {
+        imagenesEliminar: JSON.stringify([imagenUrl]),
+      });
+      setDetalles((prev) => ({
+        ...prev,
+        anuncios: prev.anuncios.map((a) =>
+          a._id === anuncioId
+            ? { ...a, imagenes: a.imagenes?.map(img => img === imagenUrl ? 'REMOVED_BY_MODERATOR' : img) ?? [] }
+            : a
+        ),
+      }));
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al eliminar la imagen.');
+    }
+  };
+
+  const eliminarFotoPerfil = async () => {
+    if (!confirm('¿Eliminar la foto de perfil de este usuario? Se mostrará un mensaje de imagen removida.')) return;
+    setCargando(true);
+    try {
+      const { data } = await api.patch(`/api/admin/users/${usuario._id}/remove-photo`);
+      setUsuarioActualizado(data.usuario);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al eliminar la foto de perfil.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const inicial = usuario.nombre?.[0]?.toUpperCase() ?? '?';
+  const esProveedor = usuario.roles?.includes('proveedor');
+
   return (
-    <>
-      <tr className="border-b border-border last:border-0 hover:bg-background/50 transition-colors">
-        <td className="px-4 py-3">
-          <p className="text-sm font-medium text-text">{u.nombre}</p>
-          <p className="text-xs text-text-muted">{u.email}</p>
-        </td>
-        <td className="px-4 py-3">
-          <div className="flex flex-wrap gap-1">
-            {u.roles.map((r) => (
-              <span key={r} className="text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize">
-                {r}
-              </span>
-            ))}
+    <div
+      onClick={(e) => { if (e.target.className.includes('fixed')) onCerrar(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Cabecera */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+          <h2 className="text-lg font-bold text-text">Detalle del usuario</h2>
+          <button
+            onClick={onCerrar}
+            className="text-text-muted hover:text-text transition-colors"
+            aria-label="Cerrar"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Información básica */}
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <div
+                onClick={() => usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR' && setFotoFullscreen(usuarioActualizado.fotoPerfil)}
+                className={`w-24 h-24 rounded-full bg-primary/15 flex items-center justify-center text-3xl font-bold text-primary overflow-hidden border-2 border-primary ${usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR' ? 'cursor-pointer hover:opacity-75' : ''}`}
+              >
+                {usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR'
+                  ? <img src={imgUrl(usuarioActualizado.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
+                  : inicial}
+              </div>
+              {usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR' && (
+                <button
+                  onClick={eliminarFotoPerfil}
+                  disabled={cargando}
+                  className="text-xs font-semibold border border-danger text-danger hover:bg-danger/10 px-2 py-1 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
+                >
+                  <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-4 h-4" alt="eliminar" />
+                  Eliminar foto
+                </button>
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-text">{usuario.nombre}</h3>
+              <p className="text-sm text-text-muted">{usuario.email}</p>
+              <p className="text-sm text-text-muted">{usuario.telefono}</p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {usuario.roles?.map((r) => (
+                  <span key={r} className="text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize">
+                    {r}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-3">
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${usuario.activo ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'}`}>
+                  {usuario.activo ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+            </div>
           </div>
-        </td>
-        <td className="px-4 py-3 text-xs text-text-muted">{fmt(u.createdAt)}</td>
-        <td className="px-4 py-3">
+
+          {error && (
+            <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-2">{error}</p>
+          )}
+
+          {/* Datos de cliente */}
+          {!esProveedor && citas && citas.length > 0 && (
+            <div className="border-t border-border pt-6 space-y-4">
+              <h4 className="text-sm font-semibold text-text">Citas agendadas</h4>
+              <div className="space-y-3">
+                {citas.map((cita) => (
+                  <div key={cita._id} className="bg-background rounded-lg p-3 text-xs border border-border">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-text">{cita.proveedor?.nombre ?? 'Proveedor'}</p>
+                        <p className="text-text-muted text-xs">{cita.proveedor?.email}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold shrink-0 whitespace-nowrap ${
+                        cita.estado === 'aceptada' ? 'bg-success/10 text-success' :
+                        cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                        cita.estado === 'reagendada' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>
+                        {cita.estado}
+                      </span>
+                    </div>
+                    <p className="text-text-muted mb-1">📝 {cita.descripcion}</p>
+                    <p className="text-text-muted">📅 {fmt(cita.fechaPropuesta ?? cita.fechaConfirmada)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Datos de proveedor */}
+          {esProveedor && (
+            <div className="border-t border-border pt-6 space-y-4">
+              <h4 className="text-sm font-semibold text-text">Información profesional</h4>
+              {loading ? (
+                <div className="h-20 bg-white/10 rounded-xl animate-pulse" />
+              ) : detalles ? (
+                <div className="space-y-3">
+                  {detalles.verificationStatus && (
+                    <div>
+                      <p className="text-xs text-text-muted mb-1">Estado de verificación</p>
+                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                        detalles.verificationStatus === 'verified' ? 'bg-success/10 text-success' :
+                        detalles.verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-danger/10 text-danger'
+                      }`}>
+                        {detalles.verificationStatus === 'verified' ? 'Verificado' :
+                         detalles.verificationStatus === 'pending' ? 'Pendiente' : 'Rechazado'}
+                      </span>
+                    </div>
+                  )}
+                  {detalles.categoria && (
+                    <div>
+                      <p className="text-xs text-text-muted">Categoría</p>
+                      <p className="text-sm font-medium text-text">{CATEGORIAS[detalles.categoria] ?? detalles.categoria}</p>
+                    </div>
+                  )}
+                  {detalles.descripcion && (
+                    <div>
+                      <p className="text-xs text-text-muted">Descripción</p>
+                      <p className="text-sm text-text">{detalles.descripcion}</p>
+                    </div>
+                  )}
+                  {detalles.anuncios && detalles.anuncios.length > 0 && (
+                    <div>
+                      <p className="text-xs text-text-muted mb-2">Anuncios activos ({detalles.anuncios.length})</p>
+                      <div className="space-y-3">
+                        {detalles.anuncios.slice(0, 5).map((a) => {
+                          const imagenes = a.imagenes ?? (a.imagenUrl ? [a.imagenUrl] : []);
+                          return (
+                            <div key={a._id} className="bg-background rounded-lg p-4 space-y-3">
+                              <div>
+                                <p className="font-semibold text-text">{a.titulo}</p>
+                                <p className="text-xs text-text-muted mt-0.5">${a.precioRef ?? a.precio} · {CATEGORIAS[a.categoria] ?? a.categoria}</p>
+                              </div>
+
+                              {imagenes.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {imagenes.map((img, idx) => {
+                                    const esRemovida = img === 'REMOVED_BY_MODERATOR';
+                                    return (
+                                      <div key={idx} className="relative group">
+                                        {esRemovida ? (
+                                          <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+                                            🚫
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <img
+                                              src={imgUrl(img)}
+                                              alt={`img-${idx}`}
+                                              onClick={() => setFotoFullscreen(img)}
+                                              className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-75 transition-opacity"
+                                            />
+                                            <button
+                                              onClick={() => eliminarImagenDeAnuncio(a._id, img)}
+                                              className="absolute -top-2 -right-2 w-5 h-5 bg-danger rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger-dark"
+                                              title="Eliminar imagen"
+                                            >
+                                              <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                                  a.estado === 'activo' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'
+                                }`}>
+                                  {a.estado}
+                                </span>
+                                <button
+                                  onClick={() => setAnuncioEditando(a)}
+                                  className="text-xs font-semibold border border-primary text-primary hover:bg-primary hover:text-white px-3 py-1 rounded-lg transition-colors"
+                                >
+                                  Editar anuncio
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {/* Acciones */}
+          <div className="border-t border-border pt-6 flex gap-3">
+            <button
+              onClick={toggle}
+              disabled={cargando}
+              className={`flex-1 text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50 ${
+                usuario.activo
+                  ? 'bg-danger/10 hover:bg-danger/20 text-danger'
+                  : 'bg-success/10 hover:bg-success/20 text-success'
+              }`}
+            >
+              {cargando ? '…' : usuario.activo ? 'Desactivar' : 'Activar'}
+            </button>
+            <button
+              onClick={onCerrar}
+              className="flex-1 text-xs font-semibold px-3 py-2 rounded-lg border border-border text-text hover:bg-background transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {anuncioEditando && (
+        <ModalEditarAnuncio
+          anuncio={anuncioEditando}
+          usuario={usuario}
+          onCerrar={() => setAnuncioEditando(null)}
+          onGuardado={(anuncioActualizado) => {
+            if (anuncioActualizado) {
+              setDetalles((prev) => ({
+                ...prev,
+                anuncios: prev.anuncios.map((a) => a._id === anuncioActualizado._id ? anuncioActualizado : a),
+              }));
+            } else {
+              setDetalles((prev) => ({
+                ...prev,
+                anuncios: prev.anuncios.filter((a) => a._id !== anuncioEditando._id),
+              }));
+            }
+            setAnuncioEditando(null);
+          }}
+        />
+      )}
+
+      {/* Lightbox para ver imagen a tamaño completo */}
+      {fotoFullscreen && (
+        <div
+          onClick={() => setFotoFullscreen(null)}
+          className="fixed inset-0 z-101 bg-black/80 flex items-center justify-center p-4"
+        >
+          <div className="relative max-w-2xl max-h-[90vh]">
+            <img
+              src={imgUrl(fotoFullscreen)}
+              alt="foto-completa"
+              className="w-full h-full object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setFotoFullscreen(null)}
+              className="absolute -top-8 right-0 text-white hover:text-gray-300 transition-colors"
+              aria-label="Cerrar"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tab: Usuarios ─────────────────────────────────────────────────
+function FilaUsuario({ usuario: u, onToggle, onVerDetalle }) {
+  const inicial = u.nombre?.[0]?.toUpperCase() ?? '?';
+
+  return (
+    <tr
+      onClick={() => onVerDetalle(u)}
+      className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors cursor-pointer"
+    >
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary shrink-0 overflow-hidden border border-primary/30">
+            {u.fotoPerfil
+              ? <img src={imgUrl(u.fotoPerfil)} alt={u.nombre} className="w-full h-full object-cover" />
+              : inicial}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-text truncate">{u.nombre}</p>
+            <p className="text-xs text-text-muted truncate">{u.email}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex flex-wrap gap-1">
+          {u.roles.map((r) => (
+            <span key={r} className="text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize">
+              {r}
+            </span>
+          ))}
+        </div>
+      </td>
+      <td className="px-4 py-3 text-xs text-text-muted">{fmt(u.createdAt)}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-between">
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${u.activo ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'}`}>
             {u.activo ? 'Activo' : 'Inactivo'}
           </span>
-        </td>
-        <td className="px-4 py-3">
-          <button
-            onClick={toggle}
-            disabled={cargando}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
-              u.activo
-                ? 'bg-danger/10 hover:bg-danger/20 text-danger'
-                : 'bg-success/10 hover:bg-success/20 text-success'
-            }`}
-          >
-            {cargando ? '…' : u.activo ? 'Desactivar' : 'Activar'}
-          </button>
-        </td>
-      </tr>
-      {error && (
-        <tr>
-          <td colSpan={5} className="px-4 pb-2">
-            <ErrorMsg texto={error} />
-          </td>
-        </tr>
-      )}
-    </>
+          <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+          </svg>
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -320,6 +970,7 @@ function TabUsuarios() {
   const [page, setPage]         = useState(1);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   const cargar = useCallback((p) => {
     setLoading(true);
@@ -337,6 +988,7 @@ function TabUsuarios() {
 
   const actualizarActivo = useCallback((id, activo) => {
     setUsuarios((prev) => prev.map((u) => u._id === id ? { ...u, activo } : u));
+    setUsuarioSeleccionado((prev) => prev && prev._id === id ? { ...prev, activo } : prev);
   }, []);
 
   if (loading) return <Skeleton filas={5} />;
@@ -354,12 +1006,11 @@ function TabUsuarios() {
               <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide">Roles</th>
               <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide">Registro</th>
               <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-              <th className="px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide">Acción</th>
             </tr>
           </thead>
           <tbody>
             {usuarios.map((u) => (
-              <FilaUsuario key={u._id} usuario={u} onToggle={actualizarActivo} />
+              <FilaUsuario key={u._id} usuario={u} onToggle={actualizarActivo} onVerDetalle={setUsuarioSeleccionado} />
             ))}
           </tbody>
         </table>
@@ -383,6 +1034,14 @@ function TabUsuarios() {
             Siguiente →
           </button>
         </div>
+      )}
+
+      {usuarioSeleccionado && (
+        <ModalDetalleUsuario
+          usuario={usuarioSeleccionado}
+          onCerrar={() => setUsuarioSeleccionado(null)}
+          onToggle={actualizarActivo}
+        />
       )}
     </div>
   );
@@ -525,7 +1184,7 @@ function TabReportados() {
   return (
     <div className="space-y-3">
       {lista.length === 0
-        ? <Vacio texto="No hay anuncios con reportes pendientes." />
+        ? <valid text="No hay agencies con reportes pendientes." />
         : lista.map((a) => (
             <TarjetaReportado key={a._id} anuncio={a} onGestionado={quitar} />
           ))}
@@ -571,7 +1230,7 @@ export default function AdminPage() {
         </div>
 
         {/* Contenido */}
-        {tabActiva === 0 && <TabEstadisticas />}
+        {tabActiva === 0 && <TabEstadisticas onNavigate={setTabActiva} />}
         {tabActiva === 1 && <TabVerificaciones />}
         {tabActiva === 2 && <TabUsuarios />}
         {tabActiva === 3 && <TabReportados />}

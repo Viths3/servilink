@@ -1,9 +1,12 @@
+/* cSpell:disable */
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import NavbarDashboard from '../components/NavbarDashboard';
+import InputCategorias from '../components/InputCategorias';
 import { imgUrl } from '../lib/imageUrl';
+import { CATEGORIAS } from '../lib/categorias';
 import DateTimePicker from '../components/DateTimePicker';
 
 // ── Constantes ────────────────────────────────────────────────────
@@ -16,10 +19,13 @@ const ESTADO_STYLE = {
   cancelada:  'bg-gray-100 text-gray-500',
 };
 
-const CATEGORIAS = {
+const CATEGORIAS_MAP = {
   electricidad: 'Electricidad', plomeria: 'Plomería',
   medicina: 'Medicina', carpinteria: 'Carpintería',
-  asesoria: 'Asesoría', otro: 'Otro',
+  asesoria: 'Asesoría', jardineria: 'Jardinería',
+  limpieza: 'Limpieza', pintura: 'Pintura',
+  mecanica: 'Mecánica', diseno: 'Diseño',
+  fotografia: 'Fotografía', otro: 'Otro',
 };
 
 const fmt = (fecha) =>
@@ -67,11 +73,13 @@ function BloqueWhatsApp({ nombre, telefono }) {
         href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-700 px-3.5 py-2 rounded-lg transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
       >
-        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-5.031 1.378c-1.87 1.246-3.045 3.006-3.045 5.411 0 1.748.505 3.427 1.46 4.773l-1.548 5.753 5.897-1.488c1.261.69 2.905 1.117 4.667 1.117h.004c5.192 0 9.439-4.153 9.439-9.331 0-2.491-.963-4.817-2.712-6.551-1.746-1.746-4.068-2.71-6.556-2.71"/>
-        </svg>
+        <img
+          src="https://cdn-icons-png.flaticon.com/128/733/733585.png"
+          className="w-4 h-4"
+          alt="WhatsApp"
+        />
         Abrir WhatsApp
       </a>
     </div>
@@ -306,8 +314,9 @@ function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
           <button
             onClick={handleEliminar}
             disabled={eliminando}
-            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
           >
+            <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
             {eliminando ? '…' : 'Eliminar'}
           </button>
         </div>
@@ -364,25 +373,52 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
     return () => document.removeEventListener('keydown', handler);
   }, [onCerrar]);
 
+  const validarArchivoImagen = (archivo) => {
+    // Validar tipo MIME
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(archivo.type)) {
+      setImagenError(`❌ ${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
+      return false;
+    }
+
+    // Validar extensión
+    const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
+    const extension = archivo.name.split('.').pop().toLowerCase();
+    if (!extensionesPermitidas.includes(extension)) {
+      setImagenError(`❌ ${archivo.name}: Extensión no permitida`);
+      return false;
+    }
+
+    // Validar tamaño (máx 5MB)
+    const tamanioMaxMB = 5;
+    if (archivo.size > tamanioMaxMB * 1024 * 1024) {
+      setImagenError(`❌ ${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
+      return false;
+    }
+
+    // Validar que no contenga caracteres peligrosos en el nombre
+    if (/[<>:"|?*\\/]/.test(archivo.name)) {
+      setImagenError(`❌ ${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleImagenes = (e) => {
     setImagenError('');
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    const invalidos = files.filter((f) => !['image/jpeg', 'image/png'].includes(f.type));
-    if (invalidos.length) {
-      setImagenError('Solo se aceptan archivos JPG o PNG.');
+    const archivos = Array.from(e.target.files);
+    if (!archivos.length) return;
+
+    const archivosValidos = archivos.filter(validarArchivoImagen);
+    if (archivosValidos.length === 0) {
       e.target.value = '';
       return;
     }
-    const grandes = files.filter((f) => f.size > 5 * 1024 * 1024);
-    if (grandes.length) {
-      setImagenError('Cada archivo debe pesar menos de 5 MB.');
-      e.target.value = '';
-      return;
-    }
+
     setImagenesNuevas((prev) => [
       ...prev,
-      ...files.map((f) => ({ file: f, preview: URL.createObjectURL(f) })),
+      ...archivosValidos.map((f) => ({ file: f, preview: URL.createObjectURL(f) })),
     ]);
     e.target.value = '';
   };
@@ -469,16 +505,11 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
             <label className="block text-sm font-medium text-text">
               Categoría <span className="text-danger">*</span>
             </label>
-            <select
+            <InputCategorias
               value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
-            >
-              <option value="">Selecciona…</option>
-              {CATEGORIAS_ANUNCIO.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+              onChange={setCategoria}
+              placeholder="Selecciona una categoría..."
+            />
           </div>
 
           {/* Precio */}
@@ -514,8 +545,11 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
                         setImagenesExistentes((prev) => prev.filter((p) => p !== path));
                         setImagenesEliminar((prev) => [...prev, path]);
                       }}
-                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center text-xs hover:bg-danger transition-colors"
-                    >✕</button>
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-danger transition-colors"
+                      title="Eliminar imagen"
+                    >
+                      <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
+                    </button>
                   </div>
                 ))}
                 {imagenesNuevas.map(({ preview: prev }, i) => (
@@ -524,8 +558,11 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
                     <button
                       type="button"
                       onClick={() => setImagenesNuevas((arr) => arr.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center text-xs hover:bg-danger transition-colors"
-                    >✕</button>
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-danger transition-colors"
+                      title="Eliminar imagen"
+                    >
+                      <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
+                    </button>
                   </div>
                 ))}
               </div>

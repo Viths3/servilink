@@ -27,7 +27,7 @@ const announcementSchema = new mongoose.Schema(
     categoria:   {
       type: String,
       required: [true, 'La categoría es requerida'],
-      enum: ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'otro'],
+      enum: ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'jardineria', 'limpieza', 'pintura', 'mecanica', 'diseno', 'fotografia', 'otro'],
     },
     precioRef:   { type: Number, min: 0, default: null },
     imagenes:    [{ type: String }],

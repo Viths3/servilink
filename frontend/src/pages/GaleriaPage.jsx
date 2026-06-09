@@ -3,25 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import ModalPerfil from '../components/ModalPerfil';
+import InputCategorias from '../components/InputCategorias';
 import { imgUrl } from '../lib/imageUrl';
-
-const ICONOS_CATEGORIA = {
-  electricidad: 'https://cdn-icons-png.flaticon.com/128/3103/3103594.png',
-  plomeria:     'https://cdn-icons-png.flaticon.com/128/8213/8213812.png',
-  medicina:     'https://cdn-icons-png.flaticon.com/128/2902/2902069.png',
-  carpinteria:  'https://cdn-icons-png.flaticon.com/128/1973/1973728.png',
-  asesoria:     'https://cdn-icons-png.flaticon.com/128/1469/1469884.png',
-  otro:         'https://cdn-icons-png.flaticon.com/128/10758/10758496.png',
-};
-
-const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad' },
-  { value: 'plomeria',     label: 'Plomería' },
-  { value: 'medicina',     label: 'Medicina' },
-  { value: 'carpinteria',  label: 'Carpintería' },
-  { value: 'asesoria',     label: 'Asesoría' },
-  { value: 'otro',         label: 'Otro' },
-];
+import { CATEGORIAS, ICONOS_CATEGORIA } from '../lib/categorias';
 
 // ── Logo SVG Cúpulas Catedral ────────────────────────────────────
 function LogoCatedral() {
@@ -407,16 +391,13 @@ export default function GaleriaPage() {
               placeholder="¿Qué servicio buscas?"
               className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
             />
-            <select
-              value={catInput}
-              onChange={(e) => setCatInput(e.target.value)}
-              className="sm:w-44 px-4 py-3 rounded-lg text-text bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-            >
-              <option value="">Todas las categorías</option>
-              {CATEGORIAS.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+            <div className="sm:w-44">
+              <InputCategorias
+                value={catInput}
+                onChange={setCatInput}
+                placeholder="Categoría..."
+              />
+            </div>
             <button
               type="submit"
               className="px-6 py-3 bg-white text-primary font-semibold text-sm rounded-lg hover:bg-accent hover:text-primary transition-colors"
@@ -445,7 +426,12 @@ export default function GaleriaPage() {
                   : 'bg-surface text-text-muted border-border hover:border-primary hover:text-primary'
               }`}
             >
-              <img src={ICONOS_CATEGORIA[c.value]} alt={c.label} className="w-5 h-5" loading="lazy" />
+              <img
+                src={ICONOS_CATEGORIA[c.value]}
+                className="w-5 h-5 object-contain"
+                alt={c.label}
+                onError={(e) => { e.target.style.display='none' }}
+              />
               {c.label}
             </button>
           ))}

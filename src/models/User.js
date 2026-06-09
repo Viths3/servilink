@@ -8,7 +8,7 @@ const providerDataSchema = new mongoose.Schema(
     categoria:          {
       type: String,
       required: true,
-      enum: ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'otro'],
+      enum: ['electricidad', 'plomeria', 'medicina', 'carpinteria', 'asesoria', 'jardineria', 'limpieza', 'pintura', 'mecanica', 'diseno', 'fotografia', 'otro'],
     },
     descripcion:        { type: String, default: '' },
     verificationStatus: {

@@ -57,7 +57,7 @@ export default function NavbarDashboard({ badge }) {
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white overflow-hidden shrink-0">
-                {usuario?.fotoPerfil
+                {usuario?.fotoPerfil && usuario.fotoPerfil !== 'REMOVED_BY_MODERATOR'
                   ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                   : usuario?.nombre?.[0]?.toUpperCase() ?? '?'}
               </div>

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../lib/axios';
 import Navbar from '../components/Navbar';
+import InputCategorias from '../components/InputCategorias';
+import { CATEGORIAS } from '../lib/categorias';
 
 const normalizeTel = (val) => {
   if (!val) return '+593';
@@ -9,15 +11,6 @@ const normalizeTel = (val) => {
   if (!val.startsWith('+593')) return '+593';
   return val;
 };
-
-const CATEGORIAS = [
-  { value: 'electricidad', label: 'Electricidad', icon: 'https://cdn-icons-png.flaticon.com/128/3659/3659898.png' },
-  { value: 'plomeria',     label: 'Plomería', icon: 'https://cdn-icons-png.flaticon.com/128/2038/2038854.png' },
-  { value: 'medicina',     label: 'Medicina', icon: 'https://cdn-icons-png.flaticon.com/128/2382/2382533.png' },
-  { value: 'carpinteria',  label: 'Carpintería', icon: 'https://cdn-icons-png.flaticon.com/128/1998/1998342.png' },
-  { value: 'asesoria',     label: 'Asesoría', icon: 'https://cdn-icons-png.flaticon.com/128/1046/1046857.png' },
-  { value: 'otro',         label: 'Otro', icon: 'https://cdn-icons-png.flaticon.com/128/1875/1875688.png' },
-];
 
 export default function RegistroProveedorPage() {
   const { state: prefill } = useLocation();
@@ -186,19 +179,11 @@ export default function RegistroProveedorPage() {
                   <label htmlFor="categoria" className="block text-sm font-medium text-text mb-1.5">
                     Categoría
                   </label>
-                  <select
-                    id="categoria"
-                    name="categoria"
+                  <InputCategorias
                     value={form.categoria}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg border border-border text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
-                  >
-                    <option value="">Selecciona…</option>
-                    {CATEGORIAS.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
+                    onChange={(value) => setForm((f) => ({ ...f, categoria: value }))}
+                    placeholder="Selecciona tu categoría..."
+                  />
                 </div>
               </div>
 

@@ -392,6 +392,31 @@ const gestionarAnuncioReportado = async (req, res) => {
   }
 };
 
+// ── Eliminar foto de perfil de usuario ──────────────────────────────
+const eliminarFotoPerfilUsuario = async (req, res) => {
+  try {
+    const usuario = await User.findById(req.params.id);
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    usuario.fotoPerfil = 'REMOVED_BY_MODERATOR';
+    await usuario.save();
+
+    res.json({
+      mensaje: 'Foto de perfil eliminada',
+      usuario: {
+        _id: usuario._id,
+        nombre: usuario.nombre,
+        fotoPerfil: usuario.fotoPerfil,
+      },
+    });
+  } catch (err) {
+    console.error('eliminarFotoPerfilUsuario:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   getVerificaciones,
   procesarVerificacion,
@@ -402,4 +427,5 @@ module.exports = {
   toggleUsuario,
   getAnunciosReportados,
   gestionarAnuncioReportado,
+  eliminarFotoPerfilUsuario,
 };
