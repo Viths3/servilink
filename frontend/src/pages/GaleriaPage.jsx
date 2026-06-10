@@ -357,17 +357,21 @@ export default function GaleriaPage() {
 
       {/* Hero / Buscador — Cuenca Colonial */}
       <section
-        className="pt-28 pb-12 px-4 text-white text-center relative min-h-105 overflow-hidden"
+        className="pt-28 pb-12 px-4 text-white text-center relative min-h-105"
         style={{
           backgroundImage: 'linear-gradient(135deg, #2D5016 0%, #1E3409 40%, #D97441 85%, #E8BC45 100%)',
           backgroundAttachment: 'fixed'
         }}
       >
-        {/* Patrón decorativo sutil */}
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: "url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
-        }} />
+        {/* Fondo con overflow-hidden propio para no afectar al dropdown */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Patrón decorativo sutil */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: "url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
+          }} />
+        </div>
 
+        {/* Contenido encima — libre de overflow-hidden */}
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 drop-shadow-lg">
             ServiLink: La voz de Cuenca
@@ -391,7 +395,7 @@ export default function GaleriaPage() {
               placeholder="¿Qué servicio buscas?"
               className="flex-1 px-4 py-3 rounded-lg text-text bg-surface placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
             />
-            <div className="sm:w-44">
+            <div className="sm:w-44 relative z-10">
               <InputCategorias
                 value={catInput}
                 onChange={setCatInput}
