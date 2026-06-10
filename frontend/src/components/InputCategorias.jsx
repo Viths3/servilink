@@ -71,7 +71,7 @@ export default function InputCategorias({ value, onChange, placeholder = 'Buscar
       </div>
 
       {abierto && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
           {filtradas.length > 0 ? (
             filtradas.map((cat) => (
               <button
@@ -80,7 +80,7 @@ export default function InputCategorias({ value, onChange, placeholder = 'Buscar
                 className="w-full px-4 py-2.5 text-left hover:bg-primary/5 transition-colors flex items-center gap-2 border-b border-border/50 last:border-0"
                 type="button"
               >
-                <img src={cat.icono} alt={cat.label} className="w-5 h-5" />
+                <img src={`/iconos/${cat.value}.png`} alt={cat.label} className="w-5 h-5" />
                 <span className="text-sm text-text">{cat.label}</span>
               </button>
             ))
