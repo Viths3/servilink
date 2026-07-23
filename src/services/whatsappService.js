@@ -112,6 +112,20 @@ const notificarDisputaAbierta = (telefono, nombreProveedor, nombreCliente, motiv
 const notificarDisputaResuelta = (telefono, nombre, resolucion) =>
   sendWhatsApp(telefono, 'disputa_resuelta', [nombre, resolucion]);
 
+// ── Recordatorios automáticos (src/services/reminderService.js) ──
+
+// Recordatorio de visita/cita confirmada que ocurre en ~24h (a cliente y proveedor)
+const notificarRecordatorioVisita = (telefono, nombre, contraparte, fecha) =>
+  sendWhatsApp(telefono, 'recordatorio_visita', [nombre, contraparte, fecha]);
+
+// Recordatorio al proveedor: tiene una solicitud sin responder hace tiempo
+const notificarRecordatorioSolicitudPendiente = (telefono, nombreProveedor, nombreCliente) =>
+  sendWhatsApp(telefono, 'recordatorio_solicitud_pendiente', [nombreProveedor, nombreCliente]);
+
+// Recordatorio al cliente: tiene un cobro pendiente de pago
+const notificarRecordatorioPago = (telefono, nombreCliente, nombreProveedor, monto) =>
+  sendWhatsApp(telefono, 'recordatorio_pago_pendiente', [nombreCliente, nombreProveedor, monto]);
+
 module.exports = {
   sendWhatsApp,
   notificarVerificacionAprobada,
@@ -127,4 +141,7 @@ module.exports = {
   notificarAnuncioSuspendido,
   notificarDisputaAbierta,
   notificarDisputaResuelta,
+  notificarRecordatorioVisita,
+  notificarRecordatorioSolicitudPendiente,
+  notificarRecordatorioPago,
 };

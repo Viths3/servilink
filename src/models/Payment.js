@@ -64,6 +64,8 @@ const paymentSchema = new mongoose.Schema(
     fechaLiberacion:           { type: Date, default: null },
     fechaPagadoProveedor:      { type: Date, default: null },
     disputa: { type: disputaSchema, default: null },
+    // Evita reenviar el recordatorio de "pago pendiente" más de una vez.
+    recordatorioPagoEnviado: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

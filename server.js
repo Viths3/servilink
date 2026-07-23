@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const path = require('path');
 const app = require('./src/app');
+const { runRecordatorios } = require('./src/services/reminderService');
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -25,6 +26,12 @@ mongoose
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
       console.log(`📍 Entorno: ${process.env.NODE_ENV}`);
     });
+
+    // Recordatorios por WhatsApp (visitas próximas, solicitudes y pagos
+    // pendientes): se revisan cada 15 minutos. Las banderas en los modelos
+    // evitan que un mismo recordatorio se envíe más de una vez.
+    runRecordatorios();
+    setInterval(runRecordatorios, 15 * 60 * 1000);
   })
   .catch((err) => {
     console.error('❌ Error conectando a MongoDB:', err.message);

@@ -29,6 +29,10 @@ const serviceRequestSchema = new mongoose.Schema(
     // Fotos que el proveedor adjunta al marcar el servicio como completado —
     // sirven como evidencia si el cliente disputa el pago más adelante.
     evidenciaCompletado: [{ type: String }],
+    // Banderas para no reenviar el mismo recordatorio de WhatsApp más de una vez
+    // (ver src/services/reminderService.js).
+    recordatorioVisitaEnviado:    { type: Boolean, default: false },
+    recordatorioPendienteEnviado: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

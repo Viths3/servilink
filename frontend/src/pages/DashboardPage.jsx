@@ -61,38 +61,19 @@ function Vacio({ texto }) {
   );
 }
 
-// ── Bloque WhatsApp + mensajería interna ──────────────────────────
-function BloqueWhatsApp({ nombre, telefono, usuarioId }) {
-  if (!telefono && !usuarioId) return null;
-  const telefonoSinSigno = telefono?.replace(/^\+/, '');
-  const waUrl = telefono ? `https://wa.me/${telefonoSinSigno}` : null;
+// ── Bloque de contacto vía mensajería interna ─────────────────────
+function BloqueContacto({ nombre, usuarioId }) {
+  if (!usuarioId) return null;
 
   return (
     <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center gap-2">
       <p className="text-xs text-text-muted w-full">Contacta a {nombre}:</p>
-      {waUrl && (
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
-        >
-          <img
-            src="https://cdn-icons-png.flaticon.com/128/733/733585.png"
-            className="w-4 h-4"
-            alt="WhatsApp"
-          />
-          Abrir WhatsApp
-        </a>
-      )}
-      {usuarioId && (
-        <Link
-          to={`/mensajes?con=${usuarioId}`}
-          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded-lg transition-colors"
-        >
-          💬 Mensaje interno
-        </Link>
-      )}
+      <Link
+        to={`/mensajes?con=${usuarioId}`}
+        className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded-lg transition-colors"
+      >
+        💬 Enviar mensaje
+      </Link>
     </div>
   );
 }
@@ -528,9 +509,8 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
           <p className="text-xs text-success mt-1">Confirmada: {fmt(solicitud.fechaConfirmada)}</p>
         )}
         {mostrarWhatsApp && (
-          <BloqueWhatsApp
+          <BloqueContacto
             nombre={solicitud.proveedor?.nombre}
-            telefono={solicitud.proveedor?.telefono}
             usuarioId={solicitud.proveedor?._id}
           />
         )}
@@ -649,9 +629,8 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             <p className="text-xs text-primary mt-0.5">Anuncio: {solicitud.anuncio.titulo}</p>
           )}
           {mostrarWhatsApp && (
-            <BloqueWhatsApp
+            <BloqueContacto
               nombre={solicitud.cliente?.nombre}
-              telefono={solicitud.cliente?.telefono}
               usuarioId={solicitud.cliente?._id}
             />
           )}
