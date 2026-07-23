@@ -78,6 +78,14 @@ function AnuncioCard({ anuncio }) {
           <svg className="w-3.5 h-3.5 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fillRule="evenodd" d="M16.403 12.652a3 3 0 0 0 0-5.304 3 3 0 0 0-3.75-3.751 3 3 0 0 0-5.305 0 3 3 0 0 0-3.751 3.75 3 3 0 0 0 0 5.305 3 3 0 0 0 3.75 3.751 3 3 0 0 0 5.305 0 3 3 0 0 0 3.751-3.75Zm-2.546-4.46a.75.75 0 0 0-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
           </svg>
+          {anuncio.ratingPromedio > 0 && (
+            <span className="flex items-center gap-0.5 shrink-0 text-text">
+              <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
+              </svg>
+              {anuncio.ratingPromedio.toFixed(1)}
+            </span>
+          )}
         </div>
         <p className="text-[15px] pt-0.5">
           {anuncio.precioRef != null
@@ -136,16 +144,16 @@ export default function GaleriaPage() {
   const [page, setPage]               = useState(1);
 
   const [searchInput, setSearchInput] = useState('');
-  const [filtros, setFiltros]         = useState({ search: '', categoria: '' });
+  const [filtros, setFiltros]         = useState({ search: '', categoria: '', sort: 'recientes' });
 
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
-  const fetchAnuncios = useCallback(async (pagina, { search, categoria }) => {
+  const fetchAnuncios = useCallback(async (pagina, { search, categoria, sort }) => {
     setLoading(true);
     setError(null);
     try {
-      const params = { page: pagina, limit: LIMIT };
+      const params = { page: pagina, limit: LIMIT, sort: sort || 'recientes' };
       if (search)    params.search    = search;
       if (categoria) params.categoria = categoria;
 
@@ -173,6 +181,11 @@ export default function GaleriaPage() {
   const handleCategoria = (valor) => {
     setPage(1);
     setFiltros((f) => ({ ...f, categoria: f.categoria === valor ? '' : valor }));
+  };
+
+  const handleOrden = (valor) => {
+    setPage(1);
+    setFiltros((f) => ({ ...f, sort: valor }));
   };
 
   const handlePagina = (p) => {
@@ -250,25 +263,43 @@ export default function GaleriaPage() {
           })}
         </div>
 
-        {/* Contador de resultados / limpiar filtro */}
+        {/* Contador de resultados / orden / limpiar filtro */}
         {!loading && (
-          <div className="flex items-center gap-3 mt-1">
-            <p className="text-sm text-text-muted">
-              {total === 0
-                ? 'Sin resultados'
-                : `${total} servicio${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`}
-              {filtros.search && <> para <strong className="text-text">"{filtros.search}"</strong></>}
-              {filtros.categoria && (
-                <> en <strong className="text-text">{CATEGORIAS.find((c) => c.value === filtros.categoria)?.label}</strong></>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-1">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-text-muted">
+                {total === 0
+                  ? 'Sin resultados'
+                  : `${total} servicio${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`}
+                {filtros.search && <> para <strong className="text-text">"{filtros.search}"</strong></>}
+                {filtros.categoria && (
+                  <> en <strong className="text-text">{CATEGORIAS.find((c) => c.value === filtros.categoria)?.label}</strong></>
+                )}
+              </p>
+              {(filtros.categoria || filtros.search) && (
+                <button
+                  onClick={() => { setSearchInput(''); setPage(1); setFiltros({ search: '', categoria: '', sort: filtros.sort }); }}
+                  className="text-xs font-medium text-text-muted underline hover:text-text transition-colors"
+                >
+                  Limpiar filtros
+                </button>
               )}
-            </p>
-            {(filtros.categoria || filtros.search) && (
-              <button
-                onClick={() => { setSearchInput(''); setPage(1); setFiltros({ search: '', categoria: '' }); }}
-                className="text-xs font-medium text-text-muted underline hover:text-text transition-colors"
-              >
-                Limpiar filtros
-              </button>
+            </div>
+
+            {total > 0 && (
+              <label className="flex items-center gap-2 text-sm text-text-muted">
+                Ordenar por
+                <select
+                  value={filtros.sort}
+                  onChange={(e) => handleOrden(e.target.value)}
+                  className="text-sm text-text bg-surface border border-border rounded-full pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary cursor-pointer"
+                >
+                  <option value="recientes">Más recientes</option>
+                  <option value="calificacion">Mejor calificados</option>
+                  <option value="precio_asc">Precio: menor a mayor</option>
+                  <option value="precio_desc">Precio: mayor a menor</option>
+                </select>
+              </label>
             )}
           </div>
         )}

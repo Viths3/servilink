@@ -10,6 +10,8 @@ import { CATEGORIAS } from '../lib/categorias';
 import DateTimePicker from '../components/DateTimePicker';
 import Estrellas from '../components/Estrellas';
 import { IconoChat, IconoTarjeta, IconoCandado, IconoCheck, IconoAlerta, IconoEstrella } from '../components/Iconos';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 // ── Constantes ────────────────────────────────────────────────────
 const ESTADO_STYLE = {
@@ -180,6 +182,7 @@ function PagoCliente({ solicitud, onUpdate }) {
   const [modalPago, setModalPago] = useState(false);
   const [cargando, setCargando]   = useState(false);
   const [error, setError]         = useState('');
+  const toast = useToast();
 
   if (!solicitud.pago) return null;
   const { pago } = solicitud;
@@ -207,8 +210,9 @@ function PagoCliente({ solicitud, onUpdate }) {
     try {
       const { data } = await api.post(`/api/payments/${pago._id}/disputar`, { motivo: motivo.trim() });
       onUpdate(solicitud._id, { pago: data.data });
+      toast.success('Disputa registrada. Un administrador la revisará.');
     } catch (err) {
-      alert(err.response?.data?.error ?? 'Error al registrar la disputa.');
+      toast.error(err.response?.data?.error ?? 'Error al registrar la disputa.');
     }
   };
 
@@ -750,15 +754,23 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
 // ── Tarjeta de anuncio propio ─────────────────────────────────────
 function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
   const [eliminando, setEliminando] = useState(false);
+  const toast = useToast();
+  const confirmar = useConfirm();
 
   const handleEliminar = async () => {
-    if (!window.confirm(`¿Eliminar el anuncio "${anuncio.titulo}"?`)) return;
+    const ok = await confirmar(`¿Eliminar el anuncio "${anuncio.titulo}"? Esta acción no se puede deshacer.`, {
+      titulo: 'Eliminar anuncio',
+      textoConfirmar: 'Eliminar',
+      peligroso: true,
+    });
+    if (!ok) return;
     setEliminando(true);
     try {
       await api.delete(`/api/announcements/${anuncio._id}`);
       onEliminar(anuncio._id);
+      toast.success('Anuncio eliminado.');
     } catch (err) {
-      alert(err.response?.data?.error ?? 'Error al eliminar el anuncio.');
+      toast.error(err.response?.data?.error ?? 'Error al eliminar el anuncio.');
     } finally {
       setEliminando(false);
     }

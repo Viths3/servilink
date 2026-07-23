@@ -35,6 +35,7 @@ app.use('/api/service-requests', require('./routes/serviceRequest.routes'));
 // Sprint 4: Mensajería interna, Pagos
 app.use('/api/messages', require('./routes/message.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 // ── RUTA HEALTH CHECK ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

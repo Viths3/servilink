@@ -6,6 +6,7 @@ import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
 import NavbarDashboard from '../components/NavbarDashboard';
 import { IconoCalendario } from '../components/Iconos';
+import { useConfirm } from '../context/ConfirmContext';
 
 const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados', 'Pagos'];
 
@@ -581,6 +582,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
   const [citas, setCitas] = useState(null);
   const [fotoFullscreen, setFotoFullscreen] = useState(null);
   const [usuarioActualizado, setUsuarioActualizado] = useState(usuario);
+  const confirmar = useConfirm();
 
   useEffect(() => {
     setLoading(true);
@@ -612,7 +614,8 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
   };
 
   const eliminarImagenDeAnuncio = async (anuncioId, imagenUrl) => {
-    if (!confirm('¿Eliminar esta imagen del anuncio?')) return;
+    const ok = await confirmar('¿Eliminar esta imagen del anuncio?', { titulo: 'Eliminar imagen', textoConfirmar: 'Eliminar', peligroso: true });
+    if (!ok) return;
     try {
       await api.patch(`/api/announcements/${anuncioId}`, {
         imagenesEliminar: JSON.stringify([imagenUrl]),
@@ -631,7 +634,12 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
   };
 
   const eliminarFotoPerfil = async () => {
-    if (!confirm('¿Eliminar la foto de perfil de este usuario? Se mostrará un mensaje de imagen removida.')) return;
+    const ok = await confirmar('¿Eliminar la foto de perfil de este usuario? Se mostrará un mensaje de imagen removida.', {
+      titulo: 'Eliminar foto de perfil',
+      textoConfirmar: 'Eliminar',
+      peligroso: true,
+    });
+    if (!ok) return;
     setCargando(true);
     try {
       const { data } = await api.patch(`/api/admin/users/${usuario._id}/remove-photo`);

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { imgUrl } from '../lib/imageUrl';
 import DateTimePicker from '../components/DateTimePicker';
+import { useConfirm } from '../context/ConfirmContext';
 
 const ICONOS_CATEGORIA = {
   electricidad: 'https://cdn-icons-png.flaticon.com/128/3103/3103594.png',
@@ -370,6 +371,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
+  const confirmar = useConfirm();
 
   const [imagenesAEliminar, setImagenesAEliminar] = useState([]);
   const [imagenesNuevas, setImagenesNuevas] = useState([]);
@@ -433,8 +435,9 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
     e.target.value = '';
   };
 
-  const eliminarImagenDeAnuncio = (ruta) => {
-    if (!confirm('¿Eliminar esta imagen?')) return;
+  const eliminarImagenDeAnuncio = async (ruta) => {
+    const ok = await confirmar('¿Eliminar esta imagen?', { titulo: 'Eliminar imagen', textoConfirmar: 'Eliminar', peligroso: true });
+    if (!ok) return;
     setImagenesAEliminar((prev) => [...prev, ruta]);
   };
 
@@ -694,6 +697,7 @@ export default function DetalleAnuncioPage() {
   const [modalEditarAbierto, setModalEditar] = useState(false);
   const [cargando, setCargando]     = useState(false);
   const [mensajeAdmin, setMensajeAdmin] = useState('');
+  const confirmar = useConfirm();
 
   useEffect(() => {
     let cancelled = false;
@@ -717,7 +721,8 @@ export default function DetalleAnuncioPage() {
   const esAdmin = usuario?.roles?.includes('admin') ?? false;
 
   const cambiarEstado = async (nuevoEstado) => {
-    if (!confirm(`¿Cambiar estado a "${nuevoEstado}"?`)) return;
+    const ok = await confirmar(`¿Cambiar estado a "${nuevoEstado}"?`, { titulo: 'Cambiar estado del anuncio' });
+    if (!ok) return;
     setCargando(true);
     try {
       const { data } = await api.patch(`/api/announcements/${anuncio._id}`, {

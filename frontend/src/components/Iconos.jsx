@@ -88,3 +88,11 @@ export function IconoLuna({ className = 'w-3.5 h-3.5' }) {
     </svg>
   );
 }
+
+export function IconoCampana({ className = 'w-3.5 h-3.5' }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.9 32.9 0 0 0 13.484 0 .75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 17.05a.75.75 0 0 1 1.06 0 1.5 1.5 0 0 0 1.98 0 .75.75 0 1 1 1.06 1.06 3 3 0 0 1-4.1 0 .75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}

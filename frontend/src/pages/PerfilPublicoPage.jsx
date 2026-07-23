@@ -233,6 +233,38 @@ export default function PerfilPublicoPage() {
                 </section>
               )}
 
+              {/* ── Portafolio: trabajos realizados ── */}
+              {esProv && perfil.portafolio?.length > 0 && (
+                <section>
+                  <h2 className="text-base font-semibold text-text mb-4">
+                    Trabajos realizados
+                    <span className="ml-2 text-xs font-medium text-text-muted">
+                      ({perfil.portafolio.reduce((n, t) => n + t.evidenciaCompletado.length, 0)})
+                    </span>
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {perfil.portafolio.flatMap((trabajo) =>
+                      trabajo.evidenciaCompletado.map((foto, i) => (
+                        <a
+                          key={`${trabajo._id}-${i}`}
+                          href={imgUrl(foto)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={trabajo.descripcion}
+                          className="group relative aspect-square rounded-xl overflow-hidden bg-background"
+                        >
+                          <img
+                            src={imgUrl(foto)}
+                            alt={trabajo.descripcion}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </section>
+              )}
+
               {/* ── Reseñas ── */}
               {esProv && (
                 <section>

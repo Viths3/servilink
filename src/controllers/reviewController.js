@@ -1,5 +1,6 @@
 const Review          = require('../models/Review');
 const ServiceRequest  = require('../models/ServiceRequest');
+const { crearNotificacion } = require('../services/notificationService');
 
 // ── POST /api/service-requests/:id/review (auth, cliente) ────────
 // Solo el cliente de una solicitud completada puede dejar una reseña, una sola vez.
@@ -34,6 +35,8 @@ const crearResena = async (req, res) => {
       puntuacion: puntuacionNum,
       comentario: comentario?.trim() ?? '',
     });
+
+    await crearNotificacion(solicitud.proveedor, 'resena_recibida', `Recibiste una reseña de ${puntuacionNum} estrella${puntuacionNum !== 1 ? 's' : ''}.`, `/usuarios/${solicitud.proveedor}/public`);
 
     res.status(201).json({ mensaje: 'Reseña publicada', data: resena });
   } catch (err) {

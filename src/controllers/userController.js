@@ -117,12 +117,23 @@ const getPerfilPublico = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const [anuncios, solicitudesCompletadas, resenas] = await Promise.all([
+    const [anuncios, solicitudesCompletadas, resenas, portafolio] = await Promise.all([
       Announcement.find({ proveedor: req.params.id, estado: 'activo' })
         .select('titulo descripcion categoria precioRef imagenUrl imagenes createdAt')
         .lean(),
       ServiceRequest.countDocuments({ proveedor: req.params.id, estado: 'completada' }),
       Review.find({ proveedor: req.params.id }).select('puntuacion').lean(),
+      // Portafolio real: fotos que el proveedor subió al completar un servicio
+      // (evidencia de pago), no anuncios activos — trabajos ya realizados.
+      ServiceRequest.find({
+        proveedor: req.params.id,
+        estado: 'completada',
+        evidenciaCompletado: { $exists: true, $ne: [] },
+      })
+        .select('descripcion evidenciaCompletado updatedAt')
+        .sort({ updatedAt: -1 })
+        .limit(24)
+        .lean(),
     ]);
 
     const totalResenas    = resenas.length;
@@ -130,7 +141,7 @@ const getPerfilPublico = async (req, res) => {
       ? Math.round((resenas.reduce((sum, r) => sum + r.puntuacion, 0) / totalResenas) * 10) / 10
       : 0;
 
-    res.json({ data: { ...usuario.toJSON(), anuncios, solicitudesCompletadas, ratingPromedio, totalResenas } });
+    res.json({ data: { ...usuario.toJSON(), anuncios, solicitudesCompletadas, ratingPromedio, totalResenas, portafolio } });
   } catch (err) {
     console.error('getPerfilPublico:', err);
     res.status(500).json({ error: 'Error interno del servidor' });

@@ -1,10 +1,16 @@
 const Announcement = require('../models/Announcement');
 
+const ORDENES_VALIDOS = ['recientes', 'precio_asc', 'precio_desc', 'calificacion'];
+
 // ── RF-08 / RF-20: GET /api/announcements (público) ──────────────
-// Soporta filtros: categoria, search (título/descripción). Paginado.
+// Soporta filtros: categoria, search (título/descripción), sort. Paginado.
 const listarAnuncios = async (req, res) => {
   try {
-    const { categoria, search, page = 1, limit = 10 } = req.query;
+    const { categoria, search, page = 1, limit = 10, sort = 'recientes' } = req.query;
+
+    if (!ORDENES_VALIDOS.includes(sort)) {
+      return res.status(400).json({ error: 'Parámetro sort inválido' });
+    }
 
     const filtro = { estado: 'activo' };
 
@@ -25,17 +31,78 @@ const listarAnuncios = async (req, res) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
+    // Ordenar por calificación requiere unir con las reseñas del proveedor
+    // (el rating vive en Review, no en el anuncio), así que usa un pipeline
+    // de agregación aparte del camino simple de find().
+    if (sort === 'calificacion') {
+      const pipelineBase = [
+        { $match: filtro },
+        {
+          $lookup: {
+            from: 'reviews',
+            localField: 'proveedor',
+            foreignField: 'proveedor',
+            as: 'resenas',
+          },
+        },
+        {
+          $addFields: {
+            ratingPromedio: {
+              $cond: [
+                { $gt: [{ $size: '$resenas' }, 0] },
+                { $round: [{ $avg: '$resenas.puntuacion' }, 1] },
+                0,
+              ],
+            },
+          },
+        },
+        { $sort: { ratingPromedio: -1, createdAt: -1 } },
+      ];
+
+      const [anuncios, totalArr] = await Promise.all([
+        Announcement.aggregate([
+          ...pipelineBase,
+          { $skip: skip },
+          { $limit: limitNum },
+          { $project: { reportes: 0, resenas: 0 } },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'proveedor',
+              foreignField: '_id',
+              as: 'proveedor',
+              pipeline: [{ $project: { nombre: 1, fotoPerfil: 1 } }],
+            },
+          },
+          { $unwind: '$proveedor' },
+        ]),
+        Announcement.aggregate([...pipelineBase, { $count: 'total' }]),
+      ]);
+
+      const total = totalArr[0]?.total ?? 0;
+      return res.json({
+        data: anuncios,
+        total,
+        page: pageNum,
+        totalPages: Math.ceil(total / limitNum),
+      });
+    }
+
+    const ORDEN_MONGO = {
+      recientes:    { createdAt: -1 },
+      precio_asc:   { precioRef: 1, createdAt: -1 },
+      precio_desc:  { precioRef: -1, createdAt: -1 },
+    };
+
     const [anuncios, total] = await Promise.all([
       Announcement.find(filtro)
         .select('-reportes')
         .populate('proveedor', 'nombre fotoPerfil')
-        .sort({ createdAt: -1 })
+        .sort(ORDEN_MONGO[sort])
         .skip(skip)
         .limit(limitNum),
       Announcement.countDocuments(filtro),
     ]);
-
-    console.log('DEBUG listarAnuncios - total BD:', total, '- anuncios encontrados:', anuncios.length, '- filtro:', JSON.stringify(filtro));
 
     res.json({
       data: anuncios,

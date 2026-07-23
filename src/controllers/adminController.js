@@ -13,6 +13,7 @@ const {
   notificarAnuncioSuspendido,
   notificarDisputaResuelta,
 } = require('../services/whatsappService');
+const { crearNotificacion } = require('../services/notificationService');
 
 // ── RF-06: GET /api/admin/verifications ───────────────────────────
 // Lista proveedores con verificationStatus='pendiente'.
@@ -69,8 +70,10 @@ const procesarVerificacion = async (req, res) => {
 
     if (accion === 'aprobar') {
       await notificarVerificacionAprobada(usuario.telefono, usuario.nombre);
+      await crearNotificacion(usuario._id, 'verificacion_aprobada', 'Tu identidad fue verificada. Ya puedes publicar servicios.', '/dashboard');
     } else {
       await notificarVerificacionRechazada(usuario.telefono, usuario.nombre, comentario.trim());
+      await crearNotificacion(usuario._id, 'verificacion_rechazada', `Tu verificación fue rechazada: ${comentario.trim()}`, '/dashboard');
     }
 
     res.json({
@@ -149,8 +152,10 @@ const procesarUpgrade = async (req, res) => {
       };
       await usuario.save();
       await notificarUpgradeAprobado(usuario.telefono, usuario.nombre);
+      await crearNotificacion(usuario._id, 'upgrade_aprobado', '¡Tu solicitud para ser proveedor fue aprobada!', '/dashboard');
     } else {
       await notificarUpgradeRechazado(usuario.telefono, usuario.nombre, comentario.trim());
+      await crearNotificacion(usuario._id, 'upgrade_rechazado', `Tu solicitud para ser proveedor fue rechazada: ${comentario.trim()}`, '/dashboard');
     }
 
     res.json({
@@ -365,6 +370,7 @@ const gestionarAnuncioReportado = async (req, res) => {
         anuncio.titulo,
         motivo.trim()
       );
+      await crearNotificacion(anuncio.proveedor._id, 'anuncio_editado', `Un admin editó tu anuncio "${anuncio.titulo}": ${motivo.trim()}`, `/anuncios/${anuncio._id}`);
     } else if (accion === 'suspender') {
       if (anuncio.estado === 'suspendido') {
         return res.status(409).json({ error: 'El anuncio ya está suspendido' });
@@ -379,6 +385,7 @@ const gestionarAnuncioReportado = async (req, res) => {
         anuncio.titulo,
         motivo.trim()
       );
+      await crearNotificacion(anuncio.proveedor._id, 'anuncio_suspendido', `Tu anuncio "${anuncio.titulo}" fue suspendido: ${motivo.trim()}`, `/anuncios/${anuncio._id}`);
     } else {
       // desestimar: solo marcar reportes como revisados
       anuncio.reportes.forEach((r) => { r.revisado = true; });
@@ -505,6 +512,8 @@ const resolverDisputaPago = async (req, res) => {
     await Promise.all([
       notificarDisputaResuelta(pago.cliente.telefono, pago.cliente.nombre, resultadoTexto),
       notificarDisputaResuelta(pago.proveedor.telefono, pago.proveedor.nombre, resultadoTexto),
+      crearNotificacion(pago.cliente._id, 'disputa_resuelta', resultadoTexto, '/dashboard'),
+      crearNotificacion(pago.proveedor._id, 'disputa_resuelta', resultadoTexto, '/dashboard'),
     ]);
 
     res.json({ mensaje: 'Disputa resuelta', data: pago });

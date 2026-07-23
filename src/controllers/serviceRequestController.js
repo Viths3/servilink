@@ -11,6 +11,7 @@ const {
   notificarReagendamiento,
   notificarRespuestaReagendamiento,
 } = require('../services/whatsappService');
+const { crearNotificacion } = require('../services/notificationService');
 
 // Formatear fecha para mensajes de WhatsApp
 const formatFecha = (fecha) =>
@@ -77,6 +78,7 @@ const enviarSolicitud = async (req, res) => {
       req.usuario.nombre,
       formatFecha(fechaDate)
     );
+    await crearNotificacion(proveedor._id, 'nueva_solicitud', `${req.usuario.nombre} te envió una nueva solicitud de servicio.`, '/dashboard');
 
     res.status(201).json({
       mensaje: 'Solicitud enviada correctamente',
@@ -181,6 +183,7 @@ const aceptarSolicitud = async (req, res) => {
       solicitud.proveedor.nombre,
       formatFecha(solicitud.fechaConfirmada)
     );
+    await crearNotificacion(solicitud.cliente._id, 'cita_confirmada', `${solicitud.proveedor.nombre} aceptó tu solicitud.`, '/dashboard');
 
     res.json({ mensaje: 'Solicitud aceptada', data: solicitud });
   } catch (err) {
@@ -221,6 +224,7 @@ const rechazarSolicitud = async (req, res) => {
       solicitud.proveedor.nombre,
       solicitud.motivoRechazo
     );
+    await crearNotificacion(solicitud.cliente._id, 'cita_rechazada', `${solicitud.proveedor.nombre} rechazó tu solicitud: ${solicitud.motivoRechazo}`, '/dashboard');
 
     res.json({ mensaje: 'Solicitud rechazada', data: solicitud });
   } catch (err) {
@@ -267,6 +271,7 @@ const reagendarSolicitud = async (req, res) => {
       solicitud.proveedor.nombre,
       formatFecha(fechaDate)
     );
+    await crearNotificacion(solicitud.cliente._id, 'reagendamiento_propuesto', `${solicitud.proveedor.nombre} propuso una nueva fecha para tu solicitud.`, '/dashboard');
 
     res.json({ mensaje: 'Reagendamiento propuesto al cliente', data: solicitud });
   } catch (err) {
@@ -300,6 +305,7 @@ const aceptarReagendamiento = async (req, res) => {
       solicitud.proveedor.nombre,
       'aceptado'
     );
+    await crearNotificacion(solicitud.proveedor._id, 'reagendamiento_aceptado', `${solicitud.cliente.nombre} aceptó la nueva fecha propuesta.`, '/dashboard');
 
     res.json({ mensaje: 'Reagendamiento aceptado', data: solicitud });
   } catch (err) {
@@ -332,6 +338,7 @@ const rechazarReagendamiento = async (req, res) => {
       solicitud.proveedor.nombre,
       'rechazado'
     );
+    await crearNotificacion(solicitud.proveedor._id, 'reagendamiento_rechazado', `${solicitud.cliente.nombre} rechazó la nueva fecha. La solicitud fue cancelada.`, '/dashboard');
 
     res.json({ mensaje: 'Reagendamiento rechazado. La solicitud fue cancelada.', data: solicitud });
   } catch (err) {
@@ -363,6 +370,8 @@ const completarSolicitud = async (req, res) => {
     // Si hay un pago retenido para esta solicitud, programa su liberación
     // tras la ventana de disputa (ver paymentController.programarLiberacion).
     await programarLiberacion(solicitud._id);
+
+    await crearNotificacion(solicitud.cliente, 'servicio_completado', 'Tu servicio fue marcado como completado. ¡Déjale una reseña al proveedor!', '/dashboard');
 
     res.json({ mensaje: 'Solicitud marcada como completada', data: solicitud });
   } catch (err) {

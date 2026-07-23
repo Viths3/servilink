@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 import PrivateRoute from './components/PrivateRoute';
 import GaleriaPage from './pages/GaleriaPage';
 import LoginPage from './pages/LoginPage';
@@ -16,6 +18,8 @@ import PerfilPublicoPage from './pages/PerfilPublicoPage';
 export default function App() {
   return (
     <AuthProvider>
+    <ToastProvider>
+    <ConfirmProvider>
       <BrowserRouter>
         <Routes>
           {/* Rutas públicas */}
@@ -36,6 +40,8 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+    </ConfirmProvider>
+    </ToastProvider>
     </AuthProvider>
   );
 }

@@ -4,19 +4,30 @@ const ServiceRequest  = require('../models/ServiceRequest');
 const payphoneService = require('../services/payphoneService');
 const { COMISION_PORCENTAJE, HORAS_RETENCION, modoLive } = require('../config/payments');
 const { notificarDisputaAbierta } = require('../services/whatsappService');
+const { crearNotificacion } = require('../services/notificationService');
 
 // ── Libera automáticamente los pagos cuya ventana de disputa venció ──
 // Un pago 'retenido' pasa a 'liberado' cuando el servicio fue marcado
 // completado (fechaLiberacionProgramada) y esa fecha ya pasó, siempre
 // que no haya una disputa abierta.
 const liberarPagosVencidos = async (filtro = {}) => {
-  await Payment.updateMany(
-    {
-      ...filtro,
-      estado: 'retenido',
-      fechaLiberacionProgramada: { $ne: null, $lte: new Date() },
-    },
-    { $set: { estado: 'liberado', fechaLiberacion: new Date() } }
+  const criterio = {
+    ...filtro,
+    estado: 'retenido',
+    fechaLiberacionProgramada: { $ne: null, $lte: new Date() },
+  };
+
+  // Se obtienen los IDs antes de actualizar para poder notificar a cada
+  // proveedor (updateMany no permite ejecutar un side-effect por documento).
+  const vencidos = await Payment.find(criterio).select('_id proveedor monto');
+  if (vencidos.length === 0) return;
+
+  await Payment.updateMany(criterio, { $set: { estado: 'liberado', fechaLiberacion: new Date() } });
+
+  await Promise.all(
+    vencidos.map((p) =>
+      crearNotificacion(p.proveedor, 'pago_liberado', `Se liberó un pago de $${p.monto.toFixed(2)} a tu favor.`, '/dashboard')
+    )
   );
 };
 
@@ -191,6 +202,8 @@ const confirmarPagoPayphone = async (req, res) => {
     pago.fechaPago             = new Date();
     await pago.save();
 
+    await crearNotificacion(pago.proveedor, 'pago_retenido', `El cliente pagó $${pago.monto.toFixed(2)}. Se liberará cuando completes el servicio.`, '/dashboard');
+
     res.json({ mensaje: 'Pago confirmado y retenido hasta que el servicio se complete', data: pago });
   } catch (err) {
     console.error('confirmarPagoPayphone:', err);
@@ -249,6 +262,8 @@ const confirmarPago = async (req, res) => {
     pago.fechaPago            = new Date();
     await pago.save();
 
+    await crearNotificacion(pago.proveedor, 'pago_retenido', `El cliente pagó $${pago.monto.toFixed(2)}. Se liberará cuando completes el servicio.`, '/dashboard');
+
     res.json({ mensaje: 'Pago confirmado y retenido hasta que el servicio se complete', data: pago });
   } catch (err) {
     console.error('confirmarPago:', err);
@@ -284,6 +299,7 @@ const disputarPago = async (req, res) => {
     // El proveedor tiene la oportunidad de responder con su versión y evidencia
     // antes de que un admin decida (igual que el Resolution Center de Airbnb).
     await notificarDisputaAbierta(pago.proveedor.telefono, pago.proveedor.nombre, pago.cliente.nombre, motivo.trim());
+    await crearNotificacion(pago.proveedor._id, 'disputa_abierta', `${pago.cliente.nombre} abrió una disputa sobre un pago. Puedes responder antes de que un admin decida.`, '/dashboard');
 
     res.json({ mensaje: 'Disputa registrada. El proveedor puede responder antes de que un administrador decida.', data: pago });
   } catch (err) {

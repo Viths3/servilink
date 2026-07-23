@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
 import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
-import { IconoSol, IconoLuna } from './Iconos';
+import { IconoSol, IconoLuna, IconoCampana } from './Iconos';
 
 // Logo SVG Cúpulas Catedral Nueva
 function LogoCatedral() {
@@ -93,6 +93,134 @@ export function BotonMensajes({ claro = false }) {
   );
 }
 
+const tiempoRelativo = (fecha) => {
+  const segundos = Math.floor((Date.now() - new Date(fecha).getTime()) / 1000);
+  if (segundos < 60) return 'ahora';
+  const minutos = Math.floor(segundos / 60);
+  if (minutos < 60) return `hace ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `hace ${horas} h`;
+  const dias = Math.floor(horas / 24);
+  return `hace ${dias} d`;
+};
+
+// Centro de notificaciones: campana con contador + panel desplegable de
+// eventos recientes (solicitud aceptada, pago liberado, reseña recibida, etc.).
+export function BotonNotificaciones({ claro = false }) {
+  const { usuario } = useAuth();
+  const navigate = useNavigate();
+  const [abierto, setAbierto] = useState(false);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [noLeidas, setNoLeidas] = useState(0);
+  const [cargando, setCargando] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!usuario) return;
+    let cancelled = false;
+    const cargarConteo = () => {
+      api.get('/api/notifications/unread-count')
+        .then(({ data }) => { if (!cancelled) setNoLeidas(data.noLeidas); })
+        .catch(() => {});
+    };
+    cargarConteo();
+    const intervalo = setInterval(cargarConteo, 30000);
+    return () => { cancelled = true; clearInterval(intervalo); };
+  }, [usuario]);
+
+  useEffect(() => {
+    if (!abierto) return;
+    const handler = (e) => { if (!ref.current?.contains(e.target)) setAbierto(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [abierto]);
+
+  const abrir = () => {
+    setAbierto((v) => !v);
+    if (!abierto) {
+      setCargando(true);
+      api.get('/api/notifications')
+        .then(({ data }) => { setNotificaciones(data.data); setNoLeidas(data.noLeidas); })
+        .catch(() => {})
+        .finally(() => setCargando(false));
+    }
+  };
+
+  const marcarTodasLeidas = async () => {
+    try {
+      await api.patch('/api/notifications/read-all');
+      setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
+      setNoLeidas(0);
+    } catch { /* silencioso */ }
+  };
+
+  const clicNotificacion = async (n) => {
+    setAbierto(false);
+    if (!n.leida) {
+      setNoLeidas((v) => Math.max(0, v - 1));
+      api.patch(`/api/notifications/${n._id}/read`).catch(() => {});
+    }
+    if (n.link) navigate(n.link);
+  };
+
+  if (!usuario) return null;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={abrir}
+        title="Notificaciones"
+        className={`relative p-2 rounded-full transition-colors ${
+          claro ? 'text-white/90 hover:bg-white/15' : 'text-text-muted hover:text-text hover:bg-background'
+        }`}
+      >
+        <IconoCampana className="w-5 h-5" />
+        {noLeidas > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 px-1 bg-secondary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            {noLeidas > 9 ? '9+' : noLeidas}
+          </span>
+        )}
+      </button>
+
+      {abierto && (
+        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-surface border border-border rounded-2xl shadow-xl overflow-hidden text-sm">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <p className="font-semibold text-text">Notificaciones</p>
+            {noLeidas > 0 && (
+              <button onClick={marcarTodasLeidas} className="text-xs font-medium text-primary hover:underline">
+                Marcar todas como leídas
+              </button>
+            )}
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {cargando ? (
+              <p className="px-4 py-6 text-center text-text-muted text-xs">Cargando…</p>
+            ) : notificaciones.length === 0 ? (
+              <p className="px-4 py-6 text-center text-text-muted text-xs">No tienes notificaciones aún.</p>
+            ) : (
+              notificaciones.map((n) => (
+                <button
+                  key={n._id}
+                  onClick={() => clicNotificacion(n)}
+                  className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-border last:border-0 hover:bg-background transition-colors ${
+                    !n.leida ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  {!n.leida && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}
+                  <div className={n.leida ? 'pl-4.5' : ''}>
+                    <p className="text-text leading-snug">{n.mensaje}</p>
+                    <p className="text-xs text-text-muted mt-0.5">{tiempoRelativo(n.createdAt)}</p>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const { usuario, logout } = useAuth();
   const [abierto, setAbierto]         = useState(false);
@@ -132,6 +260,7 @@ export default function Navbar() {
         {/* Acciones */}
         <div className="flex items-center gap-1.5">
           <BotonTema />
+          <BotonNotificaciones />
           <BotonMensajes />
           {usuario ? (
             <div className="relative" ref={dropdownRef}>

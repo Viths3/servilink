@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
-import { BotonMensajes, BotonTema } from './Navbar';
+import { BotonMensajes, BotonTema, BotonNotificaciones } from './Navbar';
 import { imgUrl } from '../lib/imageUrl';
 
 // Logo SVG Cúpulas Catedral Nueva
@@ -54,6 +54,7 @@ export default function NavbarDashboard({ badge }) {
           {/* Mensajes + Avatar + dropdown */}
           <div className="flex items-center gap-1.5">
           <BotonTema />
+          <BotonNotificaciones />
           <BotonMensajes />
           <div className="relative" ref={dropdownRef}>
             <button
