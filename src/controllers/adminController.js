@@ -432,7 +432,7 @@ const getPagos = async (req, res) => {
     const pagos = await Payment.find(filtro)
       .populate('cliente', 'nombre email')
       .populate('proveedor', 'nombre email')
-      .populate('solicitud', 'descripcion estado')
+      .populate('solicitud', 'descripcion estado evidenciaCompletado')
       .sort({ createdAt: -1 });
 
     res.json({ data: pagos, total: pagos.length });

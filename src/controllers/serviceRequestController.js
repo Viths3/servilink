@@ -355,6 +355,9 @@ const completarSolicitud = async (req, res) => {
     }
 
     solicitud.estado = 'completada';
+    if (req.files?.length) {
+      solicitud.evidenciaCompletado = req.files.map((f) => `/uploads/${f.filename}`);
+    }
     await solicitud.save();
 
     // Si hay un pago retenido para esta solicitud, programa su liberación

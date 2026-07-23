@@ -474,6 +474,18 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
           />
         )}
         <PagoCliente solicitud={solicitud} onUpdate={onUpdate} />
+        {solicitud.evidenciaCompletado?.length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs text-text-muted mb-1">Evidencia del proveedor:</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {solicitud.evidenciaCompletado.map((path) => (
+                <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
+                  <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
         {puedeCalificar && (
           <button
             onClick={() => setModalResena(true)}
@@ -493,12 +505,13 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
 
 // ── Tarjeta solicitud RECIBIDA (vista proveedor) con acciones ─────
 function TarjetaRecibida({ solicitud, onUpdate }) {
-  const [modo, setModo]         = useState(null); // null | 'rechazar' | 'reagendar'
+  const [modo, setModo]         = useState(null); // null | 'rechazar' | 'reagendar' | 'completar'
   const [valor, setValor]       = useState('');
+  const [evidencia, setEvidencia] = useState([]); // File[]
   const [cargando, setCargando] = useState(false);
   const [errorAcc, setErrorAcc] = useState('');
 
-  const cancelar = () => { setModo(null); setValor(''); setErrorAcc(''); };
+  const cancelar = () => { setModo(null); setValor(''); setEvidencia([]); setErrorAcc(''); };
 
   const ejecutar = async () => {
     setErrorAcc('');
@@ -547,8 +560,11 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
     setCargando(true);
     setErrorAcc('');
     try {
-      const { data } = await api.patch(`/api/service-requests/${solicitud._id}/complete`);
+      const fd = new FormData();
+      evidencia.forEach((file) => fd.append('evidencia', file));
+      const { data } = await api.patch(`/api/service-requests/${solicitud._id}/complete`, fd);
       onUpdate(solicitud._id, data.data);
+      cancelar();
     } catch (err) {
       setErrorAcc(err.response?.data?.error ?? 'Error al marcar como completada.');
     } finally {
@@ -602,6 +618,23 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
           min={new Date(Date.now() + 60000).toISOString()}
         />
       )}
+      {modo === 'completar' && (
+        <div className="space-y-2">
+          <p className="text-xs text-text-muted">
+            Opcional: adjunta fotos del trabajo terminado. Sirven como evidencia si el cliente disputa el pago más adelante.
+          </p>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={(e) => setEvidencia(Array.from(e.target.files ?? []).slice(0, 5))}
+            className="w-full text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+          />
+          {evidencia.length > 0 && (
+            <p className="text-xs text-text-muted">{evidencia.length} foto(s) seleccionada(s)</p>
+          )}
+        </div>
+      )}
 
       {errorAcc && (
         <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-1.5">
@@ -640,18 +673,18 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             )}
             {puedeCompletar && (
               <button
-                onClick={completar}
+                onClick={() => setModo('completar')}
                 disabled={cargando}
                 className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
-                {cargando ? '…' : '✓ Marcar como completada'}
+                ✓ Marcar como completada
               </button>
             )}
           </>
         ) : (
           <>
             <button
-              onClick={ejecutar}
+              onClick={modo === 'completar' ? completar : ejecutar}
               disabled={cargando}
               className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >

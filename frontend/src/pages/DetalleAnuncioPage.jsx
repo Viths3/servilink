@@ -266,9 +266,9 @@ function ModalSolicitud({ anuncio, onCerrar, navigate }) {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 px-4 py-8 overflow-y-auto"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 my-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-text">Solicitar servicio</h2>

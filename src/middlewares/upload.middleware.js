@@ -79,6 +79,9 @@ const uploadFoto = upload.single('fotoPerfil');
 // Para imagen de anuncio (hasta 5 archivos)
 const uploadImagenes = upload.array('imagenes', 5);
 
+// Para evidencia de servicio completado (hasta 5 archivos)
+const uploadEvidencia = upload.array('evidencia', 5);
+
 // Manejo de errores de Multer
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -93,4 +96,4 @@ const handleUploadError = (err, req, res, next) => {
   next();
 };
 
-module.exports = { uploadDocs, uploadFoto, uploadImagenes, handleUploadError };
+module.exports = { uploadDocs, uploadFoto, uploadImagenes, uploadEvidencia, handleUploadError };

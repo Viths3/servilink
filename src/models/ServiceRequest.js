@@ -26,6 +26,9 @@ const serviceRequestSchema = new mongoose.Schema(
       default: 'pendiente',
     },
     motivoRechazo:    { type: String, default: '' },
+    // Fotos que el proveedor adjunta al marcar el servicio como completado —
+    // sirven como evidencia si el cliente disputa el pago más adelante.
+    evidenciaCompletado: [{ type: String }],
   },
   { timestamps: true }
 );

@@ -99,7 +99,7 @@ const getMisPagos = async (req, res) => {
     })
       .populate('cliente', 'nombre')
       .populate('proveedor', 'nombre')
-      .populate('solicitud', 'descripcion estado')
+      .populate('solicitud', 'descripcion estado evidenciaCompletado')
       .sort({ createdAt: -1 });
 
     res.json({ data: pagos, total: pagos.length });

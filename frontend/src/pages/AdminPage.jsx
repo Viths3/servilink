@@ -1243,6 +1243,18 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
           {pago.disputa?.motivo && (
             <p className="text-xs text-danger mt-1">Motivo de disputa: {pago.disputa.motivo}</p>
           )}
+          {pago.solicitud?.evidenciaCompletado?.length > 0 && (
+            <div className="mt-2">
+              <p className="text-xs text-text-muted mb-1">Evidencia subida por el proveedor:</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {pago.solicitud.evidenciaCompletado.map((path) => (
+                  <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
+                    <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${
           pago.estado === 'en_disputa' ? 'bg-danger/10 text-danger' : 'bg-primary/10 text-primary'

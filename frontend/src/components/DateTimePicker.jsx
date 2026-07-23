@@ -68,19 +68,26 @@ export default function DateTimePicker({ value, onChange, min }) {
     setTempHour(value ? base.getHours() : 9);
     setTempMin(value ? Math.floor(base.getMinutes() / 5) * 5 : 0);
 
-    // Decide si abrir hacia abajo o hacia arriba según el espacio disponible en pantalla,
-    // para que no quede flotando lejos del campo dentro de un modal.
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      const ALTURA_ESTIMADA = 420;
-      const espacioAbajo = window.innerHeight - rect.bottom;
-      const espacioArriba = rect.top;
-      setPlacement(
-        espacioAbajo >= ALTURA_ESTIMADA || espacioAbajo >= espacioArriba ? 'bottom' : 'top'
-      );
-    }
+    // Si el campo está dentro de un contenedor con scroll (ej. un modal),
+    // lo centramos primero para maximizar el espacio disponible arriba y
+    // abajo antes de decidir hacia qué lado abrir el calendario.
+    containerRef.current?.scrollIntoView({ block: 'center', behavior: 'instant' });
 
-    setOpen(true);
+    requestAnimationFrame(() => {
+      // Decide si abrir hacia abajo o hacia arriba según el espacio disponible
+      // en pantalla, para que no quede flotando lejos del campo ni tape otro
+      // contenido del formulario.
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const ALTURA_ESTIMADA = 420;
+        const espacioAbajo = window.innerHeight - rect.bottom;
+        const espacioArriba = rect.top;
+        setPlacement(
+          espacioAbajo >= ALTURA_ESTIMADA || espacioAbajo >= espacioArriba ? 'bottom' : 'top'
+        );
+      }
+      setOpen(true);
+    });
   };
 
   const confirm = () => {
