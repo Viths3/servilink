@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axios';
 import Navbar from '../components/Navbar';
-import TutorialBienvenida from '../components/TutorialBienvenida';
 import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS, ICONOS_CATEGORIA } from '../lib/categorias';
 import { sugerirProfesiones, buscarProfesionExacta, profesionesPorCategoria } from '../lib/profesiones';
@@ -291,7 +290,6 @@ export default function GaleriaPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TutorialBienvenida />
       <Navbar />
 
       {/* ── Hero estilo Apple: tipografía grande, fondo limpio ── */}

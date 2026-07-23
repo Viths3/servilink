@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import PrivateRoute from './components/PrivateRoute';
+import TutorialBienvenida from './components/TutorialBienvenida';
 import GaleriaPage from './pages/GaleriaPage';
 import LoginPage from './pages/LoginPage';
 import RegistroClientePage from './pages/RegistroClientePage';
@@ -21,6 +22,7 @@ export default function App() {
     <ToastProvider>
     <ConfirmProvider>
       <BrowserRouter>
+        <TutorialBienvenida />
         <Routes>
           {/* Rutas públicas */}
           <Route path="/"                    element={<GaleriaPage />} />
