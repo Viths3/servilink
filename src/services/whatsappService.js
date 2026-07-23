@@ -10,6 +10,20 @@
 
 const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
+// Varias rutas esperan (await) el envío del WhatsApp antes de responder al
+// cliente — sin timeout, un cuelgue de la API de Meta dejaría esa petición
+// colgada indefinidamente en vez de simplemente fallar la notificación.
+const TIMEOUT_MS = 10_000;
+const fetchConTimeout = async (url, opciones) => {
+  const controlador = new AbortController();
+  const timeoutId = setTimeout(() => controlador.abort(), TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...opciones, signal: controlador.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 /**
  * Envía un mensaje de WhatsApp usando una plantilla aprobada.
  * @param {string} telefono - Número en formato E.164 (ej: +593991234567)
@@ -24,7 +38,7 @@ const sendWhatsApp = async (telefono, plantilla, params = []) => {
   }
 
   try {
-    const response = await fetch(WHATSAPP_API_URL, {
+    const response = await fetchConTimeout(WHATSAPP_API_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,

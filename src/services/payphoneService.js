@@ -22,10 +22,30 @@ const { PAYPHONE_TOKEN, PAYPHONE_STORE_ID } = require('../config/payments');
 
 const BASE_URL = 'https://pay.payphonetodoesposible.com/api';
 
+// fetch() nativo no tiene timeout por defecto — si PayPhone no responde, la
+// petición (y la conexión del cliente esperando la respuesta HTTP) quedaría
+// colgada indefinidamente. Con AbortController se corta a los 10s y se
+// convierte en un error normal que el controlador ya sabe manejar.
+const TIMEOUT_MS = 10_000;
+const fetchConTimeout = async (url, opciones) => {
+  const controlador = new AbortController();
+  const timeoutId = setTimeout(() => controlador.abort(), TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...opciones, signal: controlador.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('PayPhone no respondió a tiempo. Intenta de nuevo en unos minutos.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 const prepararPago = async ({ clientTransactionId, monto, referencia, responseUrl, cancelUrl }) => {
   const montoCentavos = Math.round(monto * 100);
 
-  const respuesta = await fetch(`${BASE_URL}/button/Prepare`, {
+  const respuesta = await fetchConTimeout(`${BASE_URL}/button/Prepare`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${PAYPHONE_TOKEN}`,
@@ -59,7 +79,7 @@ const prepararPago = async ({ clientTransactionId, monto, referencia, responseUr
 };
 
 const confirmarTransaccion = async ({ id, clientTransactionId }) => {
-  const respuesta = await fetch(`${BASE_URL}/button/V2/Confirm`, {
+  const respuesta = await fetchConTimeout(`${BASE_URL}/button/V2/Confirm`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${PAYPHONE_TOKEN}`,
