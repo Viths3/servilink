@@ -60,7 +60,7 @@ function AnuncioCard({ anuncio }) {
           </div>
         )}
         {/* Chip de categoría sobre la imagen */}
-        <span className="absolute top-3 left-3 text-xs font-semibold text-text bg-white/90 backdrop-blur px-2.5 py-1 rounded-full shadow-sm">
+        <span className="absolute top-3 left-3 text-xs font-semibold text-gray-900 bg-white/90 backdrop-blur px-2.5 py-1 rounded-full shadow-sm">
           {labelCategoria}
         </span>
       </div>
