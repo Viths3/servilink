@@ -1,0 +1,56 @@
+name: CI
+
+# Se ejecuta en cada push y pull request contra main/develop. Railway sigue
+# encargándose del deploy (auto-deploy por git push a main); este workflow
+# es solo una verificación previa — build, arranque de la app y auditoría
+# de dependencias — para detectar roturas antes de que lleguen a producción.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend — instalar, auditar y verificar arranque
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Auditoría de dependencias (producción)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Verificar que la app cargue sin errores
+        run: node -e "require('./src/app.js'); console.log('app.js OK')"
+
+  frontend:
+    name: Frontend — instalar, auditar y compilar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+
+      - name: Auditoría de dependencias (producción)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build de producción (vite build)
+        working-directory: frontend
+        run: npm run build
