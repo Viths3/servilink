@@ -9,6 +9,7 @@ import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS } from '../lib/categorias';
 import DateTimePicker from '../components/DateTimePicker';
 import Estrellas from '../components/Estrellas';
+import { IconoChat, IconoTarjeta, IconoCandado, IconoCheck, IconoAlerta, IconoEstrella } from '../components/Iconos';
 
 // ── Constantes ────────────────────────────────────────────────────
 const ESTADO_STYLE = {
@@ -72,7 +73,8 @@ function BloqueContacto({ nombre, usuarioId }) {
         to={`/mensajes?con=${usuarioId}`}
         className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded-lg transition-colors"
       >
-        💬 Enviar mensaje
+        <IconoChat />
+        Enviar mensaje
       </Link>
     </div>
   );
@@ -227,11 +229,13 @@ function PagoCliente({ solicitud, onUpdate }) {
           <button
             onClick={pagar}
             disabled={cargando}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+            className={`text-xs font-semibold px-3.5 py-2 rounded-full transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 ${
               pago.estado === 'fallido' ? 'bg-danger/10 hover:bg-danger/20 text-danger' : 'bg-primary hover:bg-primary-dark text-white'
             }`}
           >
-            {cargando ? '…' : pago.estado === 'fallido' ? `⚠ Pago rechazado — reintentar ($${pago.monto.toFixed(2)})` : `💳 Pagar $${pago.monto.toFixed(2)}`}
+            {cargando ? '…' : pago.estado === 'fallido'
+              ? <><IconoAlerta /> Pago rechazado — reintentar (${pago.monto.toFixed(2)})</>
+              : <><IconoTarjeta /> Pagar ${pago.monto.toFixed(2)}</>}
           </button>
           {error && <p className="text-xs text-danger">{error}</p>}
         </>
@@ -239,19 +243,19 @@ function PagoCliente({ solicitud, onUpdate }) {
       {pago.estado === 'retenido' && (
         <>
           <p className="text-xs text-primary font-medium">
-            🔒 Pago retenido (${pago.monto.toFixed(2)}) — se libera al proveedor cuando el servicio se complete.
+            <IconoCandado className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />Pago retenido (${pago.monto.toFixed(2)}) — se libera al proveedor cuando el servicio se complete.
           </p>
           <button onClick={disputar} className="text-xs text-danger underline">Reportar un problema con este servicio</button>
         </>
       )}
       {pago.estado === 'liberado' && (
-        <p className="text-xs text-success font-medium">✓ Servicio completado — pago liberado (${pago.monto.toFixed(2)})</p>
+        <p className="text-xs text-success font-medium flex items-center gap-1"><IconoCheck />Servicio completado — pago liberado (${pago.monto.toFixed(2)})</p>
       )}
       {pago.estado === 'pagado' && (
-        <p className="text-xs text-success font-medium">✓ Pagado (${pago.monto.toFixed(2)}) · Ref: {pago.referenciaTransferencia || pago.transaccionExternaId}</p>
+        <p className="text-xs text-success font-medium flex items-center gap-1"><IconoCheck />Pagado (${pago.monto.toFixed(2)}) · Ref: {pago.referenciaTransferencia || pago.transaccionExternaId}</p>
       )}
       {pago.estado === 'en_disputa' && (
-        <p className="text-xs text-danger font-medium">⚠ Disputa en revisión por un administrador</p>
+        <p className="text-xs text-danger font-medium flex items-center gap-1"><IconoAlerta />Disputa en revisión por un administrador</p>
       )}
     </div>
   );
@@ -266,7 +270,7 @@ function ResponderDisputa({ pago, onUpdate }) {
   const [enviado, setEnviado]     = useState(false);
 
   if (pago.disputa?.respuestaProveedor || enviado) {
-    return <p className="text-xs text-text-muted">✓ Ya respondiste a esta disputa. Un administrador la resolverá.</p>;
+    return <p className="text-xs text-text-muted flex items-center gap-1"><IconoCheck />Ya respondiste a esta disputa. Un administrador la resolverá.</p>;
   }
 
   const enviar = async () => {
@@ -290,7 +294,7 @@ function ResponderDisputa({ pago, onUpdate }) {
   return (
     <div className="space-y-2">
       <p className="text-xs text-danger font-medium">
-        ⚠ El cliente reportó: "{pago.disputa?.motivo}" — puedes responder con tu versión y evidencia antes de que un admin decida.
+        <IconoAlerta className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />El cliente reportó: "{pago.disputa?.motivo}" — puedes responder con tu versión y evidencia antes de que un admin decida.
       </p>
       <textarea
         value={texto}
@@ -310,7 +314,7 @@ function ResponderDisputa({ pago, onUpdate }) {
       <button
         onClick={enviar}
         disabled={cargando}
-        className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+        className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
       >
         {cargando ? 'Enviando…' : 'Enviar respuesta'}
       </button>
@@ -333,18 +337,18 @@ function PagoProveedor({ solicitud, onUpdate }) {
     return (
       <div className="mt-3 pt-3 border-t border-border">
         {(pago.estado === 'pendiente' || pago.estado === 'fallido') && (
-          <p className="text-xs text-text-muted">💳 Cobro de ${pago.monto.toFixed(2)} pendiente de pago del cliente</p>
+          <p className="text-xs text-text-muted flex items-center gap-1"><IconoTarjeta />Cobro de ${pago.monto.toFixed(2)} pendiente de pago del cliente</p>
         )}
         {pago.estado === 'retenido' && (
-          <p className="text-xs text-primary font-medium">🔒 El cliente pagó — retenido hasta marcar el servicio como completado</p>
+          <p className="text-xs text-primary font-medium flex items-center gap-1"><IconoCandado />El cliente pagó — retenido hasta marcar el servicio como completado</p>
         )}
         {pago.estado === 'liberado' && (
           <p className="text-xs text-success font-medium">
-            ✓ Liberado — recibirás ${pago.montoProveedor.toFixed(2)} (comisión ServiLink: ${pago.comisionMonto.toFixed(2)})
+            <IconoCheck className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />Liberado — recibirás ${pago.montoProveedor.toFixed(2)} (comisión ServiLink: ${pago.comisionMonto.toFixed(2)})
           </p>
         )}
         {pago.estado === 'pagado' && (
-          <p className="text-xs text-success font-medium">✓ Pagado (${pago.montoProveedor.toFixed(2)}) · Ref: {pago.referenciaTransferencia}</p>
+          <p className="text-xs text-success font-medium flex items-center gap-1"><IconoCheck />Pagado (${pago.montoProveedor.toFixed(2)}) · Ref: {pago.referenciaTransferencia}</p>
         )}
         {pago.estado === 'en_disputa' && (
           <ResponderDisputa pago={pago} onUpdate={(nuevoPago) => onUpdate(solicitud._id, { pago: nuevoPago })} />
@@ -374,9 +378,9 @@ function PagoProveedor({ solicitud, onUpdate }) {
       {!modo ? (
         <button
           onClick={() => setModo(true)}
-          className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg transition-colors"
+          className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3.5 py-2 rounded-full transition-colors inline-flex items-center gap-1"
         >
-          💳 Solicitar pago
+          <IconoTarjeta />Solicitar pago
         </button>
       ) : (
         <div className="flex flex-col gap-2">
@@ -393,13 +397,13 @@ function PagoProveedor({ solicitud, onUpdate }) {
             <button
               onClick={generarCobro}
               disabled={cargando}
-              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
             >
               {cargando ? '…' : 'Enviar'}
             </button>
             <button
               onClick={() => { setModo(false); setError(''); }}
-              className="text-xs font-semibold text-text-muted hover:text-text px-2 py-1.5 rounded-lg border border-border transition-colors"
+              className="text-xs font-semibold text-text-muted hover:text-text px-2 py-1.5 rounded-full border border-border transition-colors"
             >
               Cancelar
             </button>
@@ -530,13 +534,13 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
         {puedeCalificar && (
           <button
             onClick={() => setModalResena(true)}
-            className="mt-2 text-xs font-semibold bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg transition-colors"
+            className="mt-2 text-xs font-semibold bg-accent/15 hover:bg-accent/25 text-primary px-3.5 py-2 rounded-full transition-colors inline-flex items-center gap-1"
           >
-            ★ Dejar reseña
+            <IconoEstrella />Dejar reseña
           </button>
         )}
         {solicitud.calificada && (
-          <p className="text-xs text-text-muted mt-2">✓ Ya calificaste este servicio</p>
+          <p className="text-xs text-text-muted mt-2 flex items-center gap-1"><IconoCheck />Ya calificaste este servicio</p>
         )}
       </div>
       <BadgeEstado estado={solicitud.estado} />
@@ -690,7 +694,7 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
               <button
                 onClick={aceptar}
                 disabled={cargando}
-                className="text-xs font-semibold bg-success/10 hover:bg-success/20 text-success px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="text-xs font-semibold bg-success/10 hover:bg-success/20 text-success px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
               >
                 {cargando ? '…' : 'Aceptar'}
               </button>
@@ -698,7 +702,7 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             {puedeAceptarRechazar && (
               <button
                 onClick={() => setModo('rechazar')}
-                className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1.5 rounded-full transition-colors"
               >
                 Rechazar
               </button>
@@ -706,7 +710,7 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             {puedeReagendar && (
               <button
                 onClick={() => setModo('reagendar')}
-                className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full transition-colors"
               >
                 Reagendar
               </button>
@@ -715,9 +719,9 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
               <button
                 onClick={() => setModo('completar')}
                 disabled={cargando}
-                className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="text-xs font-semibold bg-background border border-border hover:bg-border/50 text-text px-3.5 py-2 rounded-full transition-colors disabled:opacity-50 inline-flex items-center gap-1"
               >
-                ✓ Marcar como completada
+                <IconoCheck />Marcar como completada
               </button>
             )}
           </>
@@ -726,13 +730,13 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             <button
               onClick={modo === 'completar' ? completar : ejecutar}
               disabled={cargando}
-              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
             >
               {cargando ? 'Guardando…' : 'Confirmar'}
             </button>
             <button
               onClick={cancelar}
-              className="text-xs font-semibold text-text-muted hover:text-text px-3 py-1.5 rounded-lg border border-border transition-colors"
+              className="text-xs font-semibold text-text-muted hover:text-text px-3 py-1.5 rounded-full border border-border transition-colors"
             >
               Cancelar
             </button>
@@ -777,14 +781,14 @@ function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => onEditar(anuncio)}
-            className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 rounded-lg transition-colors"
+            className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 rounded-full transition-colors"
           >
             Editar
           </button>
           <button
             onClick={handleEliminar}
             disabled={eliminando}
-            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
+            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-2.5 py-1 rounded-full transition-colors disabled:opacity-50 flex items-center gap-1"
           >
             <img src="https://cdn-icons-png.flaticon.com/128/17213/17213074.png" className="w-3 h-3" alt="eliminar" />
             {eliminando ? '…' : 'Eliminar'}

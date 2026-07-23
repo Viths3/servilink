@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import api from '../lib/axios';
 import NavbarDashboard from '../components/NavbarDashboard';
+import { IconoCheck, IconoAlerta } from '../components/Iconos';
 
 // Página a la que PayPhone redirige tras el checkout hospedado.
 // El resultado del pago se confirma SIEMPRE contra el backend (que a su vez
@@ -46,13 +47,13 @@ export default function PagoConfirmacionPage() {
           )}
           {estado === 'ok' && (
             <>
-              <p className="text-3xl">✓</p>
+              <div className="flex justify-center"><IconoCheck className="w-12 h-12 text-success" /></div>
               <p className="text-sm text-text">{mensaje}</p>
             </>
           )}
           {estado === 'error' && (
             <>
-              <p className="text-3xl">⚠</p>
+              <div className="flex justify-center"><IconoAlerta className="w-12 h-12 text-danger" /></div>
               <p className="text-sm text-danger">{mensaje}</p>
             </>
           )}
