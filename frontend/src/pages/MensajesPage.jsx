@@ -192,7 +192,8 @@ export default function MensajesPage() {
       <NavbarDashboard />
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden grid grid-cols-1 md:grid-cols-[300px_1fr] h-[75vh]">
-          <div className="border-r border-border flex flex-col overflow-hidden">
+          {/* Lista de conversaciones — en móvil se oculta cuando hay un chat abierto */}
+          <div className={`border-r border-border flex-col overflow-hidden ${contactoActivo ? 'hidden md:flex' : 'flex'}`}>
             <div className="px-4 py-3 border-b border-border">
               <h1 className="text-sm font-bold text-text">Mensajes</h1>
             </div>
@@ -207,14 +208,23 @@ export default function MensajesPage() {
             )}
           </div>
 
-          <div className="hidden md:flex flex-col overflow-hidden">
+          {/* Hilo del chat — en móvil ocupa toda la pantalla con botón de volver */}
+          <div className={`flex-col overflow-hidden ${contactoActivo ? 'flex' : 'hidden md:flex'}`}>
             {contactoActivo ? (
-              <Hilo
-                usuario={contactoActivo}
-                mensajes={mensajes}
-                miId={usuario?.id}
-                onEnviar={enviarMensaje}
-              />
+              <>
+                <button
+                  onClick={() => setContactoActivo(null)}
+                  className="md:hidden flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-primary border-b border-border text-left"
+                >
+                  ← Volver a conversaciones
+                </button>
+                <Hilo
+                  usuario={contactoActivo}
+                  mensajes={mensajes}
+                  miId={usuario?.id}
+                  onEnviar={enviarMensaje}
+                />
+              </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <p className="text-sm text-text-muted">Selecciona una conversación para empezar a chatear.</p>

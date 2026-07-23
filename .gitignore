@@ -10,9 +10,11 @@ npm-debug.log*
 # Archivos subidos por usuarios (en producción van a cloud storage)
 uploads/
 
-# Build frontend (Fase 3)
-# frontend/dist/ — comentado para incluir build en Railway
-# frontend/build/
+# Build frontend — NUNCA commitear: Railway lo regenera con `npm run build`
+# en cada deploy. Un dist trackeado desactualizado hace que el index.html
+# viejo apunte a assets que ya no existen (página en blanco en producción).
+frontend/dist/
+frontend/build/
 
 # Sistema operativo
 .DS_Store
