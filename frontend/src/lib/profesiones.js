@@ -200,3 +200,10 @@ export const buscarProfesionExacta = (termino) => {
   const t = normalizar(termino);
   return PROFESIONES.find((p) => normalizar(p.nombre) === t) ?? null;
 };
+
+// Todas las profesiones específicas de una categoría general — usado para
+// mostrar un submenú al hacer clic en un tile de categoría (ej. "Otro"
+// agrupa oficios muy distintos entre sí, así que conviene dejar elegir
+// cuál exactamente en vez de mezclarlos todos).
+export const profesionesPorCategoria = (categoria) =>
+  PROFESIONES.filter((p) => p.categoria === categoria);

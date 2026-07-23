@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import TutorialBienvenida from '../components/TutorialBienvenida';
 import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS, ICONOS_CATEGORIA } from '../lib/categorias';
-import { sugerirProfesiones, buscarProfesionExacta } from '../lib/profesiones';
+import { sugerirProfesiones, buscarProfesionExacta, profesionesPorCategoria } from '../lib/profesiones';
 import { IconoLupa } from '../components/Iconos';
 
 const LIMIT = 9;
@@ -153,6 +153,11 @@ export default function GaleriaPage() {
   const [indiceActivo, setIndiceActivo]         = useState(-1);
   const buscadorRef = useRef(null);
 
+  // Submenú de oficios específicos al hacer clic en un tile de categoría
+  // (ej. "Otro" agrupa oficios muy distintos: cerrajero, chef, DJ...)
+  const [categoriaAbierta, setCategoriaAbierta] = useState(null);
+  const categoriasRef = useRef(null);
+
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
@@ -245,8 +250,34 @@ export default function GaleriaPage() {
 
   const handleCategoria = (valor) => {
     setPage(1);
-    setFiltros((f) => ({ ...f, categoria: f.categoria === valor ? '' : valor }));
+    if (filtros.categoria === valor) {
+      // Segundo clic sobre la misma categoría activa: quita el filtro y cierra el submenú.
+      setFiltros((f) => ({ ...f, categoria: '', search: '' }));
+      setCategoriaAbierta(null);
+    } else {
+      setFiltros((f) => ({ ...f, categoria: valor, search: '' }));
+      setCategoriaAbierta(valor);
+    }
   };
+
+  // Refina la categoría ya activa a un oficio específico (ej. dentro de
+  // "Otro", elegir "Cerrajero" en vez de ver todo el catálogo mezclado).
+  const buscarProfesionEnCategoria = (prof) => {
+    setPage(1);
+    setSearchInput(prof.nombre);
+    setFiltros((f) => ({ ...f, categoria: prof.categoria, search: prof.nombre }));
+    setCategoriaAbierta(null);
+  };
+
+  useEffect(() => {
+    const handleClickFuera = (e) => {
+      if (categoriasRef.current && !categoriasRef.current.contains(e.target)) {
+        setCategoriaAbierta(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickFuera);
+    return () => document.removeEventListener('mousedown', handleClickFuera);
+  }, []);
 
   const handleOrden = (valor) => {
     setPage(1);
@@ -337,29 +368,57 @@ export default function GaleriaPage() {
 
       {/* ── Categorías: fila de tiles con scroll — estilo PedidosYa ── */}
       <section id="galeria" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-4">
-        <div className="flex gap-2 overflow-x-auto pb-3 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={categoriasRef} className="flex gap-2 overflow-x-auto pb-3 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATEGORIAS.map((c) => {
             const activa = filtros.categoria === c.value;
+            const oficios = profesionesPorCategoria(c.value);
             return (
-              <button
-                key={c.value}
-                onClick={() => handleCategoria(c.value)}
-                className={`shrink-0 flex flex-col items-center gap-1.5 w-20 py-3 rounded-2xl border transition-all ${
-                  activa
-                    ? 'border-primary bg-primary/5 shadow-sm'
-                    : 'border-transparent hover:border-border hover:bg-background'
-                }`}
-              >
-                <img
-                  src={ICONOS_CATEGORIA[c.value]}
-                  className={`w-8 h-8 object-contain transition-opacity ${activa ? '' : 'opacity-75'}`}
-                  alt={c.label}
-                  onError={(e) => { e.target.style.display='none' }}
-                />
-                <span className={`text-[11px] font-medium leading-none ${activa ? 'text-primary' : 'text-text-muted'}`}>
-                  {c.label}
-                </span>
-              </button>
+              <div key={c.value} className="relative shrink-0">
+                <button
+                  onClick={() => handleCategoria(c.value)}
+                  className={`flex flex-col items-center gap-1.5 w-20 py-3 rounded-2xl border transition-all ${
+                    activa
+                      ? 'border-primary bg-primary/5 shadow-sm'
+                      : 'border-transparent hover:border-border hover:bg-background'
+                  }`}
+                >
+                  <img
+                    src={ICONOS_CATEGORIA[c.value]}
+                    className={`w-8 h-8 object-contain transition-opacity ${activa ? '' : 'opacity-75'}`}
+                    alt={c.label}
+                    onError={(e) => { e.target.style.display='none' }}
+                  />
+                  <span className={`text-[11px] font-medium leading-none ${activa ? 'text-primary' : 'text-text-muted'}`}>
+                    {c.label}
+                  </span>
+                </button>
+
+                {/* Submenú: oficios específicos dentro de esta categoría */}
+                {categoriaAbierta === c.value && oficios.length > 0 && (
+                  <ul className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-56 bg-surface border border-border rounded-2xl shadow-lg z-40 overflow-hidden text-left max-h-72 overflow-y-auto">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => { setCategoriaAbierta(null); }}
+                        className="w-full px-4 py-2.5 text-left text-sm font-semibold text-primary hover:bg-primary/5 transition-colors border-b border-border/50"
+                      >
+                        Ver todo en {c.label}
+                      </button>
+                    </li>
+                    {oficios.map((prof) => (
+                      <li key={prof.nombre}>
+                        <button
+                          type="button"
+                          onClick={() => buscarProfesionEnCategoria(prof)}
+                          className="w-full px-4 py-2 text-left text-sm text-text hover:bg-background transition-colors"
+                        >
+                          {prof.nombre}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             );
           })}
         </div>
@@ -379,7 +438,7 @@ export default function GaleriaPage() {
               </p>
               {(filtros.categoria || filtros.search) && (
                 <button
-                  onClick={() => { setSearchInput(''); setPage(1); setFiltros({ search: '', categoria: '', sort: filtros.sort }); }}
+                  onClick={() => { setSearchInput(''); setPage(1); setCategoriaAbierta(null); setFiltros({ search: '', categoria: '', sort: filtros.sort }); }}
                   className="text-xs font-medium text-text-muted underline hover:text-text transition-colors"
                 >
                   Limpiar filtros
