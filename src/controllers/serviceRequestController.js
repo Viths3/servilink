@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const ServiceRequest = require('../models/ServiceRequest');
 const User = require('../models/User');
 const Announcement = require('../models/Announcement');
@@ -30,6 +31,12 @@ const enviarSolicitud = async (req, res) => {
 
     if (!proveedorId || !descripcion || !fechaPropuesta) {
       return res.status(400).json({ error: 'proveedorId, descripción y fechaPropuesta son requeridos' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(proveedorId)) {
+      return res.status(400).json({ error: 'Identificador de proveedor inválido' });
+    }
+    if (anuncioId && !mongoose.Types.ObjectId.isValid(anuncioId)) {
+      return res.status(400).json({ error: 'Identificador de anuncio inválido' });
     }
 
     // Regla 2: no puede enviarse a sí mismo

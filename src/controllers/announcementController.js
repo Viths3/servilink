@@ -33,8 +33,8 @@ const listarAnuncios = async (req, res) => {
       filtro.$or = [{ titulo: regex }, { descripcion: regex }];
     }
 
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
     const skip = (pageNum - 1) * limitNum;
 
     // Ordenar por calificación requiere unir con las reseñas del proveedor

@@ -1,3 +1,4 @@
+const mongoose        = require('mongoose');
 const Review          = require('../models/Review');
 const ServiceRequest  = require('../models/ServiceRequest');
 const { crearNotificacion } = require('../services/notificationService');
@@ -55,14 +56,28 @@ const crearResena = async (req, res) => {
 // ── GET /api/users/:id/reviews (público) ──────────────────────────
 const getResenasProveedor = async (req, res) => {
   try {
-    const resenas = await Review.find({ proveedor: req.params.id })
-      .populate('cliente', 'nombre fotoPerfil')
-      .sort({ createdAt: -1 });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Identificador de proveedor inválido' });
+    }
+    const proveedorId = new mongoose.Types.ObjectId(req.params.id);
 
-    const total = resenas.length;
-    const promedio = total > 0
-      ? resenas.reduce((sum, r) => sum + r.puntuacion, 0) / total
-      : 0;
+    // El total y promedio se calculan sobre todas las reseñas (agregación
+    // liviana en BD), pero la lista devuelta al cliente se limita a las más
+    // recientes para evitar payloads sin control de tamaño en proveedores
+    // con muchas reseñas.
+    const [resenas, agregado] = await Promise.all([
+      Review.find({ proveedor: proveedorId })
+        .populate('cliente', 'nombre fotoPerfil')
+        .sort({ createdAt: -1 })
+        .limit(50),
+      Review.aggregate([
+        { $match: { proveedor: proveedorId } },
+        { $group: { _id: null, total: { $sum: 1 }, promedio: { $avg: '$puntuacion' } } },
+      ]),
+    ]);
+
+    const total = agregado[0]?.total ?? 0;
+    const promedio = agregado[0]?.promedio ?? 0;
 
     res.json({
       data: resenas,

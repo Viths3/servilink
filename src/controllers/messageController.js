@@ -93,6 +93,9 @@ const enviarMensaje = async (req, res) => {
     if (!paraId || !contenido?.trim()) {
       return res.status(400).json({ error: 'paraId y contenido son requeridos' });
     }
+    if (!mongoose.Types.ObjectId.isValid(paraId)) {
+      return res.status(400).json({ error: 'Identificador de destinatario inválido' });
+    }
     if (paraId === req.usuario._id.toString()) {
       return res.status(400).json({ error: 'No puedes enviarte un mensaje a ti mismo' });
     }

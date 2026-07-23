@@ -21,4 +21,15 @@ const registroLimiter = rateLimit({
   message: { error: 'Demasiadas cuentas creadas desde esta IP. Intenta de nuevo más tarde.' },
 });
 
-module.exports = { loginLimiter, registroLimiter };
+// Límite general para toda la API: no previene abuso dirigido (para eso están
+// los límites específicos de arriba), pero pone un techo razonable al volumen
+// total de peticiones por IP para mitigar scraping/DoS de bajo esfuerzo.
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas peticiones desde esta IP. Intenta de nuevo más tarde.' },
+});
+
+module.exports = { loginLimiter, registroLimiter, apiLimiter };

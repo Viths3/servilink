@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
+const { apiLimiter } = require('./middlewares/rateLimit.middleware');
 
 const app = express();
 
@@ -32,8 +33,15 @@ app.use(helmet({
 app.use(cors({
   origin: esProduccion ? (process.env.PUBLIC_URL || true) : true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Límite general de peticiones por IP para toda la API — mitiga scraping y
+// abuso de bajo esfuerzo; los endpoints de login/registro tienen límites
+// más estrictos aplicados además de este.
+app.use('/api', apiLimiter);
+// Límite explícito de tamaño de payload JSON/urlencoded: los archivos van
+// por multipart/multer (con su propio límite de 5 MB), así que el cuerpo
+// JSON normal no necesita más de 100kb.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Servir archivos subidos como estáticos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
