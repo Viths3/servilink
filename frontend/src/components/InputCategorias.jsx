@@ -1,6 +1,7 @@
 /* cSpell:disable */
 import { useState, useRef, useEffect } from 'react';
 import { CATEGORIAS } from '../lib/categorias';
+import { normalizar, sugerirProfesiones } from '../lib/profesiones';
 
 export default function InputCategorias({ value, onChange, placeholder = 'Buscar categoría...' }) {
   const [abierto, setAbierto] = useState(false);
@@ -9,8 +10,15 @@ export default function InputCategorias({ value, onChange, placeholder = 'Buscar
   const containerRef = useRef(null);
 
   const categoriaSeleccionada = CATEGORIAS.find((c) => c.value === value);
-  const filtradas = CATEGORIAS.filter((c) =>
-    c.label.toLowerCase().includes(busqueda.toLowerCase())
+
+  // Además de filtrar por el nombre de la categoría general (ej. "Plomería"),
+  // se acepta el nombre específico del oficio (ej. "Plomero", "Gasfitero")
+  // para que un proveedor que no conoce cómo se llama la categoría igual
+  // encuentre la correcta escribiendo su profesión.
+  const termino = normalizar(busqueda);
+  const categoriasPorOficio = new Set(sugerirProfesiones(busqueda, 20).map((p) => p.categoria));
+  const filtradas = CATEGORIAS.filter(
+    (c) => normalizar(c.label).includes(termino) || categoriasPorOficio.has(c.value)
   );
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import TutorialBienvenida from '../components/TutorialBienvenida';
 import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS, ICONOS_CATEGORIA } from '../lib/categorias';
+import { sugerirProfesiones, buscarProfesionExacta } from '../lib/profesiones';
 import { IconoLupa } from '../components/Iconos';
 
 const LIMIT = 9;
@@ -146,6 +147,12 @@ export default function GaleriaPage() {
   const [searchInput, setSearchInput] = useState('');
   const [filtros, setFiltros]         = useState({ search: '', categoria: '', sort: 'recientes' });
 
+  // Autocompletado de profesiones/oficios en el buscador
+  const [sugerencias, setSugerencias]           = useState([]);
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const [indiceActivo, setIndiceActivo]         = useState(-1);
+  const buscadorRef = useRef(null);
+
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
@@ -172,10 +179,68 @@ export default function GaleriaPage() {
     fetchAnuncios(page, filtros);
   }, [page, filtros, fetchAnuncios]);
 
+  // Cierra el dropdown de sugerencias al hacer clic fuera del buscador
+  useEffect(() => {
+    const handleClickFuera = (e) => {
+      if (buscadorRef.current && !buscadorRef.current.contains(e.target)) {
+        setMostrarSugerencias(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickFuera);
+    return () => document.removeEventListener('mousedown', handleClickFuera);
+  }, []);
+
+  const handleCambioBusqueda = (valor) => {
+    setSearchInput(valor);
+    setIndiceActivo(-1);
+    const encontradas = sugerirProfesiones(valor);
+    setSugerencias(encontradas);
+    setMostrarSugerencias(encontradas.length > 0);
+  };
+
+  // Busca directamente por la categoría de la profesión elegida: es más
+  // confiable que el texto libre porque no depende de que el anuncio use
+  // exactamente esa palabra en su título o descripción.
+  const buscarPorProfesion = (profesion) => {
+    setSearchInput(profesion.nombre);
+    setMostrarSugerencias(false);
+    setSugerencias([]);
+    setPage(1);
+    setFiltros((f) => ({ ...f, search: '', categoria: profesion.categoria }));
+  };
+
   const handleBuscar = (e) => {
     e.preventDefault();
+    setMostrarSugerencias(false);
+    const termino = searchInput.trim();
+
+    // Si el texto coincide exactamente con una profesión conocida (aunque
+    // el usuario no haya elegido la sugerencia del dropdown), se busca por
+    // su categoría en vez de por texto libre, por la misma razón de arriba.
+    const profesion = buscarProfesionExacta(termino);
+    if (profesion) {
+      buscarPorProfesion(profesion);
+      return;
+    }
+
     setPage(1);
-    setFiltros((f) => ({ ...f, search: searchInput.trim() }));
+    setFiltros((f) => ({ ...f, search: termino, categoria: '' }));
+  };
+
+  const handleTeclaBusqueda = (e) => {
+    if (!mostrarSugerencias || sugerencias.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setIndiceActivo((i) => (i + 1) % sugerencias.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setIndiceActivo((i) => (i - 1 + sugerencias.length) % sugerencias.length);
+    } else if (e.key === 'Enter' && indiceActivo >= 0) {
+      e.preventDefault();
+      buscarPorProfesion(sugerencias[indiceActivo]);
+    } else if (e.key === 'Escape') {
+      setMostrarSugerencias(false);
+    }
   };
 
   const handleCategoria = (valor) => {
@@ -210,28 +275,64 @@ export default function GaleriaPage() {
           Servicios verificados en Cuenca. Pago protegido, reseñas reales.
         </p>
 
-        {/* Buscador tipo píldora — estilo Airbnb */}
-        <form
-          onSubmit={handleBuscar}
-          className="mt-9 max-w-xl mx-auto flex items-center bg-surface border border-border rounded-full shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/8 transition-shadow pl-6 pr-2 py-2"
-        >
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="¿Qué servicio necesitas hoy?"
-            className="flex-1 text-[15px] text-text placeholder-text-muted bg-transparent focus:outline-none min-w-0"
-          />
-          <button
-            type="submit"
-            aria-label="Buscar"
-            className="shrink-0 w-11 h-11 bg-primary hover:bg-primary-dark text-white rounded-full flex items-center justify-center transition-colors"
+        {/* Buscador tipo píldora — estilo Airbnb, con autocompletado de oficios */}
+        <div ref={buscadorRef} className="relative mt-9 max-w-xl mx-auto">
+          <form
+            onSubmit={handleBuscar}
+            className="flex items-center bg-surface border border-border rounded-full shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/8 transition-shadow pl-6 pr-2 py-2"
           >
-            <svg className="w-4.5 h-4.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </form>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => handleCambioBusqueda(e.target.value)}
+              onFocus={() => { if (sugerencias.length > 0) setMostrarSugerencias(true); }}
+              onKeyDown={handleTeclaBusqueda}
+              placeholder="¿Qué servicio necesitas hoy? Ej: plomero, electricista..."
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={mostrarSugerencias}
+              aria-autocomplete="list"
+              className="flex-1 text-[15px] text-text placeholder-text-muted bg-transparent focus:outline-none min-w-0"
+            />
+            <button
+              type="submit"
+              aria-label="Buscar"
+              className="shrink-0 w-11 h-11 bg-primary hover:bg-primary-dark text-white rounded-full flex items-center justify-center transition-colors"
+            >
+              <svg className="w-4.5 h-4.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </form>
+
+          {mostrarSugerencias && sugerencias.length > 0 && (
+            <ul className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-2xl shadow-lg z-50 overflow-hidden text-left">
+              {sugerencias.map((prof, i) => (
+                <li key={prof.nombre}>
+                  <button
+                    type="button"
+                    onClick={() => buscarPorProfesion(prof)}
+                    onMouseEnter={() => setIndiceActivo(i)}
+                    className={`w-full px-5 py-2.5 flex items-center gap-3 text-left transition-colors ${
+                      i === indiceActivo ? 'bg-primary/5' : 'hover:bg-background'
+                    }`}
+                  >
+                    <img
+                      src={ICONOS_CATEGORIA[prof.categoria]}
+                      alt=""
+                      className="w-5 h-5 shrink-0 opacity-80"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="text-sm text-text">{prof.nombre}</span>
+                    <span className="ml-auto text-xs text-text-muted shrink-0">
+                      {CATEGORIAS.find((c) => c.value === prof.categoria)?.label}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
 
       {/* ── Categorías: fila de tiles con scroll — estilo PedidosYa ── */}

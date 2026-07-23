@@ -182,7 +182,7 @@ export default function RegistroProveedorPage() {
                   <InputCategorias
                     value={form.categoria}
                     onChange={(value) => setForm((f) => ({ ...f, categoria: value }))}
-                    placeholder="Selecciona tu categoría..."
+                    placeholder="Ej: plomero, electricista, niñera..."
                   />
                 </div>
               </div>
