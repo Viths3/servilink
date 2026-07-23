@@ -129,7 +129,7 @@ export default function DateTimePicker({ value, onChange, min }) {
       <button
         type="button"
         onClick={openPicker}
-        className="w-full px-3 py-2 text-sm border border-border rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+        className="w-full px-3 py-2 text-sm border border-border rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-surface"
       >
         {value
           ? <span className="text-text">{formatDisplay(value)}</span>
@@ -140,7 +140,7 @@ export default function DateTimePicker({ value, onChange, min }) {
       {/* Dropdown */}
       {open && (
         <div
-          className={`absolute right-0 z-9999 bg-white rounded-xl shadow-xl border border-border p-4 space-y-3 w-72 max-h-[80vh] overflow-y-auto ${
+          className={`absolute right-0 z-9999 bg-surface rounded-xl shadow-xl border border-border p-4 space-y-3 w-72 max-h-[80vh] overflow-y-auto ${
             placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}
         >
@@ -184,7 +184,7 @@ export default function DateTimePicker({ value, onChange, min }) {
                   onClick={() => setTempDay(day)}
                   className={[
                     'text-xs aspect-square rounded-lg flex items-center justify-center transition-colors',
-                    disabled  ? 'text-gray-300 cursor-not-allowed'            : '',
+                    disabled  ? 'text-border cursor-not-allowed'            : '',
                     selected  ? 'bg-primary text-white font-semibold'          : '',
                     todayFlag && !selected
                               ? 'border border-primary text-primary font-semibold' : '',

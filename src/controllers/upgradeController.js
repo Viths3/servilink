@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const UpgradeRequest = require('../models/UpgradeRequest');
+const { evaluarVerificacionAutomatica, COMENTARIO_AUTO } = require('../services/verificationService');
+const { notificarUpgradeAprobado } = require('../services/whatsappService');
 
 // ── RF-16: POST /api/upgrade-requests ────────────────────────────
 // Cliente solicita convertirse en proveedor.
@@ -43,6 +45,40 @@ const solicitarUpgrade = async (req, res) => {
       descripcion: descripcion || '',
       documentos,
     });
+
+    // Verificación automática: si los controles objetivos pasan, el upgrade
+    // se aprueba al instante; si no, queda pendiente para el admin.
+    const evaluacion = await evaluarVerificacionAutomatica({
+      cedula,
+      documentos,
+      telefono: req.usuario.telefono,
+      usuarioIdExcluir: req.usuario._id,
+    });
+
+    if (evaluacion.aprobado) {
+      solicitud.estado = 'aprobada';
+      solicitud.comentario = COMENTARIO_AUTO;
+      await solicitud.save();
+
+      const usuario = await User.findById(req.usuario._id);
+      if (!usuario.roles.includes('proveedor')) usuario.roles.push('proveedor');
+      usuario.providerData = {
+        cedula,
+        categoria,
+        descripcion: descripcion || '',
+        verificationStatus: 'aprobado',
+        documentos,
+        comentarioAdmin: COMENTARIO_AUTO,
+        fechaVerificacion: new Date(),
+      };
+      await usuario.save();
+      await notificarUpgradeAprobado(usuario.telefono, usuario.nombre);
+
+      return res.status(201).json({
+        mensaje: '¡Verificación completada! Ya eres proveedor y puedes publicar tus servicios.',
+        data: solicitud,
+      });
+    }
 
     await solicitud.save();
 

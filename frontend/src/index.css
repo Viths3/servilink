@@ -16,6 +16,25 @@
   --color-success:        #2D5016;
 }
 
+/* ── Modo oscuro ──────────────────────────────────────────────────
+   Se activa con la clase .dark en <html> (toggle en la navbar).
+   Redefine los tokens semánticos; toda la app los usa, así que el
+   cambio es global sin tocar componentes. */
+.dark {
+  --color-primary:        #7CB342;  /* Verde más claro para contraste sobre fondo oscuro */
+  --color-primary-dark:   #689F38;
+  --color-primary-light:  #9CCC65;
+  --color-secondary:      #E8875A;
+  --color-accent:         #E8BC45;
+  --color-background:     #101014;  /* Fondo casi negro con tinte cálido */
+  --color-surface:        #1B1B21;
+  --color-text:           #F2F0EC;
+  --color-text-muted:     #9AA0A6;
+  --color-border:         #2C2C34;
+  --color-danger:         #E8875A;
+  --color-success:        #7CB342;
+}
+
 *,
 *::before,
 *::after {
@@ -24,8 +43,8 @@
 
 body {
   margin: 0;
-  background-color: #F8F6F1;
-  color: #1A1A2E;
+  background-color: var(--color-background);
+  color: var(--color-text);
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }

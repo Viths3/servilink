@@ -381,7 +381,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
       onClick={(e) => { if (e.target.className.includes('fixed')) onCerrar(); }}
       className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
           <div>
@@ -432,7 +432,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-surface"
               >
                 <option value="">Selecciona categoría</option>
                 <option value="electricidad">Electricidad</option>
@@ -652,7 +652,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
       onClick={(e) => { if (e.target.className.includes('fixed')) onCerrar(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
           <h2 className="text-lg font-bold text-text">Detalle del usuario</h2>
@@ -702,7 +702,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                 ))}
               </div>
               <div className="mt-3">
-                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${usuario.activo ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${usuario.activo ? 'bg-success/10 text-success' : 'bg-border text-text-muted'}`}>
                   {usuario.activo ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
@@ -729,7 +729,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                         cita.estado === 'aceptada' ? 'bg-success/10 text-success' :
                         cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
                         cita.estado === 'reagendada' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-500'
+                        'bg-border text-text-muted'
                       }`}>
                         {cita.estado}
                       </span>
@@ -795,7 +795,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                                     return (
                                       <div key={idx} className="relative group">
                                         {esRemovida ? (
-                                          <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+                                          <div className="w-16 h-16 rounded-lg bg-border flex items-center justify-center text-xs text-text-muted">
                                             🚫
                                           </div>
                                         ) : (
@@ -823,7 +823,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
 
                               <div className="flex items-center gap-2">
                                 <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                                  a.estado === 'activo' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'
+                                  a.estado === 'activo' ? 'bg-success/10 text-success' : 'bg-border text-text-muted'
                                 }`}>
                                   {a.estado}
                                 </span>
@@ -952,7 +952,7 @@ function FilaUsuario({ usuario: u, onToggle, onVerDetalle }) {
       <td className="px-4 py-3 text-xs text-text-muted">{fmt(u.createdAt)}</td>
       <td className="px-4 py-3">
         <div className="flex items-center justify-between">
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${u.activo ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500'}`}>
+          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${u.activo ? 'bg-success/10 text-success' : 'bg-border text-text-muted'}`}>
             {u.activo ? 'Activo' : 'Inactivo'}
           </span>
           <svg className="w-4 h-4 text-text-muted shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -1091,7 +1091,7 @@ function TarjetaReportado({ anuncio, onGestionado }) {
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
             anuncio.estado === 'activo'     ? 'bg-success/10 text-success' :
             anuncio.estado === 'suspendido' ? 'bg-danger/10 text-danger'   :
-            'bg-gray-100 text-gray-500'
+            'bg-border text-text-muted'
           }`}>
             {anuncio.estado}
           </span>
@@ -1135,7 +1135,7 @@ function TarjetaReportado({ anuncio, onGestionado }) {
             <button
               onClick={() => ejecutar('desestimar')}
               disabled={cargando}
-              className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              className="text-xs font-semibold bg-border hover:bg-border/70 text-text-muted px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >
               {cargando ? '…' : 'Desestimar'}
             </button>

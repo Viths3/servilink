@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
-import { BotonMensajes } from './Navbar';
+import { BotonMensajes, BotonTema } from './Navbar';
 import { imgUrl } from '../lib/imageUrl';
 
 // Logo SVG Cúpulas Catedral Nueva
@@ -35,17 +35,17 @@ export default function NavbarDashboard({ badge }) {
     <>
       {modalPerfil && <ModalPerfil onCerrar={() => setModalPerfil(false)} />}
 
-      <nav className="bg-primary border-b border-primary-dark h-16 flex items-center px-4 sm:px-6 lg:px-8">
+      <nav className="bg-surface/80 backdrop-blur-xl border-b border-border h-16 flex items-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
 
           {/* Logo con cúpulas + badge opcional */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white tracking-tight hover:opacity-80 transition-opacity">
+            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary tracking-tight hover:opacity-80 transition-opacity">
               <LogoCatedral />
               ServiLink
             </Link>
             {badge && (
-              <span className="text-xs font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                 {badge}
               </span>
             )}
@@ -53,22 +53,23 @@ export default function NavbarDashboard({ badge }) {
 
           {/* Mensajes + Avatar + dropdown */}
           <div className="flex items-center gap-1.5">
-          <BotonMensajes claro />
+          <BotonTema />
+          <BotonMensajes />
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setAbierto((v) => !v)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-2 rounded-full px-2 py-1.5 hover:bg-background transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold text-white overflow-hidden shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shrink-0">
                 {usuario?.fotoPerfil && usuario.fotoPerfil !== 'REMOVED_BY_MODERATOR'
                   ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                   : usuario?.nombre?.[0]?.toUpperCase() ?? '?'}
               </div>
-              <span className="hidden sm:block text-sm text-white/90 font-medium max-w-35 truncate">
+              <span className="hidden sm:block text-sm text-text font-medium max-w-35 truncate">
                 {usuario?.nombre}
               </span>
               <svg
-                className={`w-3.5 h-3.5 text-white/60 transition-transform ${abierto ? 'rotate-180' : ''}`}
+                className={`w-3.5 h-3.5 text-text-muted transition-transform ${abierto ? 'rotate-180' : ''}`}
                 viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
               >
                 <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
@@ -76,7 +77,7 @@ export default function NavbarDashboard({ badge }) {
             </button>
 
             {abierto && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-border rounded-xl shadow-lg py-1 text-sm z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-2xl shadow-lg py-1 text-sm z-50">
                 <div className="px-4 py-2 border-b border-border">
                   <p className="font-semibold text-text truncate">{usuario?.nombre}</p>
                   <p className="text-xs text-text-muted truncate">{usuario?.email}</p>

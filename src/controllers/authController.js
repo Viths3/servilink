@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { evaluarVerificacionAutomatica, COMENTARIO_AUTO } = require('../services/verificationService');
+const { notificarVerificacionAprobada } = require('../services/whatsappService');
 
 // ── Generar JWT ───────────────────────────────────────────────────
 const generarToken = (userId, roles) => {
@@ -97,6 +99,10 @@ const registrarProveedor = async (req, res) => {
     const fotoPerfil = fotoFile ? `/uploads/${fotoFile.filename}` : '';
     const documentos = (req.files?.documentos ?? []).map((f) => `/uploads/${f.filename}`);
 
+    // Verificación automática: si los controles objetivos pasan, se aprueba
+    // al instante; si no, queda pendiente para revisión manual del admin.
+    const evaluacion = await evaluarVerificacionAutomatica({ cedula, documentos, telefono });
+
     // Crear usuario proveedor
     const usuario = new User({
       nombre,
@@ -109,15 +115,23 @@ const registrarProveedor = async (req, res) => {
         cedula,
         categoria,
         descripcion: descripcion || '',
-        verificationStatus: 'pendiente',
+        verificationStatus: evaluacion.aprobado ? 'aprobado' : 'pendiente',
+        comentarioAdmin: evaluacion.aprobado ? COMENTARIO_AUTO : '',
+        fechaVerificacion: evaluacion.aprobado ? new Date() : undefined,
         documentos,
       },
     });
 
     await usuario.save();
 
+    if (evaluacion.aprobado) {
+      await notificarVerificacionAprobada(usuario.telefono, usuario.nombre);
+    }
+
     res.status(201).json({
-      mensaje: 'Cuenta creada. Tu identidad será verificada por nuestro equipo. Te notificaremos por WhatsApp.',
+      mensaje: evaluacion.aprobado
+        ? '¡Cuenta creada y verificada! Ya puedes publicar tus servicios.'
+        : 'Cuenta creada. Tu identidad será verificada por nuestro equipo. Te notificaremos por WhatsApp.',
       usuario: {
         id: usuario._id,
         nombre: usuario.nombre,

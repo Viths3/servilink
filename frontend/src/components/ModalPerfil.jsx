@@ -140,7 +140,7 @@ export default function ModalPerfil({ onCerrar }) {
       onClick={(e) => { if (e.target === overlayRef.current) onCerrar(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
           <h2 className="text-lg font-bold text-text">Mi perfil</h2>
@@ -179,7 +179,7 @@ export default function ModalPerfil({ onCerrar }) {
                 </div>
 
                 {mostrarMenu && (
-                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white border border-border rounded-lg shadow-lg py-1 z-40 whitespace-nowrap">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-surface border border-border rounded-lg shadow-lg py-1 z-40 whitespace-nowrap">
                     {fotoActual && fotoActual !== 'REMOVED_BY_MODERATOR' && (
                       <button
                         onClick={() => { setFotoFullscreen(true); setMostrarMenu(false); }}

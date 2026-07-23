@@ -53,7 +53,11 @@ const procesarVerificacion = async (req, res) => {
       return res.status(400).json({ error: 'El usuario no tiene rol de proveedor' });
     }
 
-    if (usuario.providerData.verificationStatus !== 'pendiente') {
+    // Se puede aprobar/rechazar una pendiente, y también REVOCAR (rechazar)
+    // una ya aprobada — respaldo de auditoría para las aprobaciones automáticas.
+    const estadoActual = usuario.providerData.verificationStatus;
+    const esRevocacion = accion === 'rechazar' && estadoActual === 'aprobado';
+    if (estadoActual !== 'pendiente' && !esRevocacion) {
       return res.status(409).json({ error: 'Esta verificación no está en estado pendiente' });
     }
 

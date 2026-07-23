@@ -23,6 +23,7 @@ export default function RegistroProveedorPage() {
   const [fotoError, setFotoError]     = useState('');
   const [error, setError]             = useState('');
   const [exito, setExito]             = useState(false);
+  const [aprobadoAlInstante, setAprobadoAlInstante] = useState(false);
   const [loading, setLoading]         = useState(false);
 
   const handleChange = (e) =>
@@ -69,7 +70,8 @@ export default function RegistroProveedorPage() {
         formData.append(k, k === 'telefono' ? normalizeTel(v) : v)
       );
       formData.append('fotoPerfil', fotoPerfil);
-      await api.post('/api/auth/register-provider', formData);
+      const { data } = await api.post('/api/auth/register-provider', formData);
+      setAprobadoAlInstante(data.usuario?.verificationStatus === 'aprobado');
       setExito(true);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrar. Intenta de nuevo.');
@@ -90,9 +92,13 @@ export default function RegistroProveedorPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-text mb-2">¡Solicitud enviada!</h2>
+            <h2 className="text-xl font-bold text-text mb-2">
+              {aprobadoAlInstante ? '¡Cuenta verificada!' : '¡Solicitud enviada!'}
+            </h2>
             <p className="text-text-muted text-sm leading-relaxed mb-6">
-              Tu cuenta está en revisión. Te notificaremos por WhatsApp cuando sea aprobada.
+              {aprobadoAlInstante
+                ? 'Tu identidad fue verificada automáticamente. Ya puedes iniciar sesión y publicar tus servicios.'
+                : 'Tu cuenta está en revisión. Te notificaremos por WhatsApp cuando sea aprobada.'}
             </p>
             <Link
               to="/login"

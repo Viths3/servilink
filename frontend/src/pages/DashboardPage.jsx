@@ -17,8 +17,8 @@ const ESTADO_STYLE = {
   aceptada:   'bg-success/10 text-success',
   rechazada:  'bg-danger/10 text-danger',
   reagendada: 'bg-primary/10 text-primary',
-  completada: 'bg-gray-100 text-gray-600',
-  cancelada:  'bg-gray-100 text-gray-500',
+  completada: 'bg-border text-text-muted',
+  cancelada:  'bg-border text-text-muted',
 };
 
 const CATEGORIAS_MAP = {
@@ -38,7 +38,7 @@ const fmt = (fecha) =>
 // ── Piezas reutilizables ──────────────────────────────────────────
 function BadgeEstado({ estado }) {
   return (
-    <span className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${ESTADO_STYLE[estado] ?? 'bg-gray-100 text-gray-500'}`}>
+    <span className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${ESTADO_STYLE[estado] ?? 'bg-border text-text-muted'}`}>
       {estado}
     </span>
   );
@@ -110,7 +110,7 @@ function ModalPago({ pago, onCerrar, onPagado }) {
       onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
         <h2 className="text-lg font-bold text-text">Pagar servicio</h2>
         <p className="text-2xl font-bold text-primary">${pago.monto.toFixed(2)}</p>
         <p className="text-xs text-text-muted -mt-2">Pasarela de pago local ServiLink (simulada)</p>
@@ -441,7 +441,7 @@ function ModalResena({ solicitud, onCerrar, onEnviada }) {
       onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
         <h2 className="text-lg font-bold text-text">Calificar servicio</h2>
         <p className="text-sm text-text-muted">
           {solicitud.proveedor?.nombre ?? 'El proveedor'} · {solicitud.anuncio?.titulo ?? solicitud.descripcion}
@@ -798,7 +798,7 @@ function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${
         anuncio.estado === 'activo' ? 'bg-success/10 text-success' :
         anuncio.estado === 'suspendido' ? 'bg-danger/10 text-danger' :
-        'bg-gray-100 text-gray-500'
+        'bg-border text-text-muted'
       }`}>
         {anuncio.estado}
       </span>
@@ -933,7 +933,7 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
       onClick={(e) => { if (e.target === overlayRef.current) onCerrar(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-text">
             {modoEdicion ? 'Editar anuncio' : 'Nuevo anuncio'}

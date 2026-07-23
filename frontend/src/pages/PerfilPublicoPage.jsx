@@ -54,8 +54,8 @@ function TarjetaAnuncio({ anuncio }) {
       {(anuncio.imagenes?.[0] ?? anuncio.imagenUrl) ? (
         <img src={imgUrl(anuncio.imagenes?.[0] ?? anuncio.imagenUrl)} alt={anuncio.titulo} className="w-full h-36 object-cover" />
       ) : (
-        <div className="w-full h-36 bg-gray-100 flex items-center justify-center">
-          <span className="text-4xl font-bold text-gray-300">{inicial}</span>
+        <div className="w-full h-36 bg-background flex items-center justify-center">
+          <span className="text-4xl font-bold text-border">{inicial}</span>
         </div>
       )}
       <div className="p-4 flex flex-col gap-2 flex-1">

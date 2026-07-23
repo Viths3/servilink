@@ -2,6 +2,8 @@ const User           = require('../models/User');
 const Announcement   = require('../models/Announcement');
 const ServiceRequest = require('../models/ServiceRequest');
 const Review         = require('../models/Review');
+const { evaluarVerificacionAutomatica, COMENTARIO_AUTO } = require('../services/verificationService');
+const { notificarVerificacionAprobada } = require('../services/whatsappService');
 
 // ── RF-05 helper: GET /api/users/me ──────────────────────────────
 const getMe = async (req, res) => {
@@ -65,17 +67,34 @@ const subirDocumentos = async (req, res) => {
 
     const documentos = req.files.map((f) => `/uploads/${f.filename}`);
 
-    const usuario = await User.findByIdAndUpdate(
-      req.usuario._id,
-      {
-        'providerData.documentos': documentos,
-        'providerData.verificationStatus': 'pendiente',
-      },
-      { new: true }
-    );
+    // Verificación automática al subir documentos: si pasa los controles
+    // objetivos, la cuenta queda aprobada al instante.
+    const evaluacion = await evaluarVerificacionAutomatica({
+      cedula: req.usuario.providerData.cedula,
+      documentos,
+      telefono: req.usuario.telefono,
+      usuarioIdExcluir: req.usuario._id,
+    });
+
+    const actualizacion = {
+      'providerData.documentos': documentos,
+      'providerData.verificationStatus': evaluacion.aprobado ? 'aprobado' : 'pendiente',
+    };
+    if (evaluacion.aprobado) {
+      actualizacion['providerData.comentarioAdmin'] = COMENTARIO_AUTO;
+      actualizacion['providerData.fechaVerificacion'] = new Date();
+    }
+
+    const usuario = await User.findByIdAndUpdate(req.usuario._id, actualizacion, { new: true });
+
+    if (evaluacion.aprobado) {
+      await notificarVerificacionAprobada(usuario.telefono, usuario.nombre);
+    }
 
     res.json({
-      mensaje: 'Documentos cargados. Tu verificación está en proceso.',
+      mensaje: evaluacion.aprobado
+        ? '¡Documentos verificados! Tu cuenta de proveedor ya está activa.'
+        : 'Documentos cargados. Tu verificación está en proceso.',
       data: {
         documentos: usuario.providerData.documentos,
         verificationStatus: usuario.providerData.verificationStatus,

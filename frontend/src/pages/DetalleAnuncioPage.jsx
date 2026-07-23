@@ -53,8 +53,8 @@ function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
 
   if (!fotos.length) {
     return (
-      <div className="w-full h-64 bg-gray-100 rounded-2xl flex items-center justify-center">
-        <span className="text-6xl font-bold text-gray-300">
+      <div className="w-full h-64 bg-background rounded-2xl flex items-center justify-center">
+        <span className="text-6xl font-bold text-border">
           {(categoriaLabel?.[0] ?? '?').toUpperCase()}
         </span>
       </div>
@@ -73,10 +73,10 @@ function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
       onMouseLeave={() => setHovered(false)}
     >
       {esRemovida(fotos[idx]) ? (
-        <div className="w-full h-72 bg-gray-200 rounded-2xl flex items-center justify-center">
+        <div className="w-full h-72 bg-border rounded-2xl flex items-center justify-center">
           <div className="text-center space-y-2">
             <span className="text-4xl">🚫</span>
-            <p className="text-sm text-gray-600">Imagen removida por un moderador</p>
+            <p className="text-sm text-text-muted">Imagen removida por un moderador</p>
           </div>
         </div>
       ) : (
@@ -112,7 +112,7 @@ function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
               <button
                 key={i}
                 onClick={() => setIdx(i)}
-                className={`w-2 h-2 rounded-full transition-colors ${i === idx ? 'bg-white' : 'bg-white/40'}`}
+                className={`w-2 h-2 rounded-full transition-colors ${i === idx ? 'bg-surface' : 'bg-white/40'}`}
                 aria-label={`Ir a imagen ${i + 1}`}
               />
             ))}
@@ -268,7 +268,7 @@ function ModalSolicitud({ anuncio, onCerrar, navigate }) {
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 px-4 py-8 overflow-y-auto"
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 my-auto">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 my-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-text">Solicitar servicio</h2>
@@ -501,7 +501,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
         onClick={(e) => { if (e.target.className.includes('fixed')) onCerrar(); }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       >
-        <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-surface rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
           <h3 className="text-lg font-bold text-primary">Editar anuncio</h3>
           <button
@@ -545,7 +545,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-surface"
               >
                 <option value="electricidad">Electricidad</option>
                 <option value="plomeria">Plomería</option>
@@ -574,7 +574,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
             <select
               value={estado}
               onChange={(e) => setEstado(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-white"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text bg-surface"
             >
               <option value="activo">Activo</option>
               <option value="suspendido">Suspendido</option>
@@ -595,7 +595,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
                     return (
                       <div key={idx} className="relative group">
                         {esRemovida || yaEliminada ? (
-                          <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-2xl cursor-default">
+                          <div className="w-20 h-20 bg-border rounded-lg flex items-center justify-center text-2xl cursor-default">
                             🚫
                           </div>
                         ) : (
@@ -836,7 +836,7 @@ export default function DetalleAnuncioPage() {
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                         anuncio.estado === 'activo' ? 'bg-success/10 text-success' :
                         anuncio.estado === 'suspendido' ? 'bg-danger/10 text-danger' :
-                        'bg-gray-100 text-gray-500'
+                        'bg-border text-text-muted'
                       }`}>
                         {anuncio.estado}
                       </span>

@@ -71,7 +71,7 @@ export default function InputCategorias({ value, onChange, placeholder = 'Buscar
       </div>
 
       {abierto && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
           {filtradas.length > 0 ? (
             filtradas.map((cat) => (
               <button

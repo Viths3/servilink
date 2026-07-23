@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import ModalPerfil from './ModalPerfil';
 import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
+import { IconoSol, IconoLuna } from './Iconos';
 
 // Logo SVG Cúpulas Catedral Nueva
 function LogoCatedral() {
@@ -21,6 +22,29 @@ function IconoChat() {
     <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M10 2c-4.42 0-8 2.91-8 6.5 0 1.99 1.13 3.76 2.9 4.94-.1.83-.35 1.65-.68 2.34a.5.5 0 0 0 .58.68 6.9 6.9 0 0 0 2.87-1.47c.72.14 1.48.21 2.33.21 4.42 0 8-2.91 8-6.5S14.42 2 10 2Z" clipRule="evenodd" />
     </svg>
+  );
+}
+
+
+// Alternador de modo claro/oscuro — persiste la preferencia del usuario.
+export function BotonTema() {
+  const [oscuro, setOscuro] = useState(() => document.documentElement.classList.contains('dark'));
+
+  const alternar = () => {
+    const nuevo = !oscuro;
+    document.documentElement.classList.toggle('dark', nuevo);
+    localStorage.setItem('servilink_tema', nuevo ? 'oscuro' : 'claro');
+    setOscuro(nuevo);
+  };
+
+  return (
+    <button
+      onClick={alternar}
+      title={oscuro ? 'Modo claro' : 'Modo oscuro'}
+      className="p-2 rounded-full text-text-muted hover:text-text hover:bg-background transition-colors"
+    >
+      {oscuro ? <IconoSol className="w-5 h-5" /> : <IconoLuna className="w-5 h-5" />}
+    </button>
   );
 }
 
@@ -107,6 +131,7 @@ export default function Navbar() {
 
         {/* Acciones */}
         <div className="flex items-center gap-1.5">
+          <BotonTema />
           <BotonMensajes />
           {usuario ? (
             <div className="relative" ref={dropdownRef}>
