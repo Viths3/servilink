@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
 import NavbarDashboard from '../components/NavbarDashboard';
+import { IconoCalendario } from '../components/Iconos';
 
 const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados', 'Pagos'];
 
@@ -275,7 +276,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
     // Validar tipo MIME
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if (!tiposPermitidos.includes(archivo.type)) {
-      setError(`❌ ${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
+      setError(`${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
       return false;
     }
 
@@ -283,20 +284,20 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
     const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
     const extension = archivo.name.split('.').pop().toLowerCase();
     if (!extensionesPermitidas.includes(extension)) {
-      setError(`❌ ${archivo.name}: Extensión no permitida`);
+      setError(`${archivo.name}: Extensión no permitida`);
       return false;
     }
 
     // Validar tamaño (máx 5MB)
     const tamanioMaxMB = 5;
     if (archivo.size > tamanioMaxMB * 1024 * 1024) {
-      setError(`❌ ${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
+      setError(`${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
       return false;
     }
 
     // Validar que no contenga caracteres peligrosos en el nombre
     if (/[<>:"|?*\\/]/.test(archivo.name)) {
-      setError(`❌ ${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
+      setError(`${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
       return false;
     }
 
@@ -364,7 +365,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
       });
 
       const { data } = await api.patch(`/api/announcements/${anuncio._id}`, fd);
-      setExito('✅ Anuncio actualizado correctamente');
+      setExito('Anuncio actualizado correctamente');
       setTimeout(() => {
         onGuardado(data.data);
       }, 1500);
@@ -734,7 +735,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                       </span>
                     </div>
                     <p className="text-text-muted mb-1">📝 {cita.descripcion}</p>
-                    <p className="text-text-muted">📅 {fmt(cita.fechaPropuesta ?? cita.fechaConfirmada)}</p>
+                    <p className="text-text-muted flex items-center gap-1"><IconoCalendario />{fmt(cita.fechaPropuesta ?? cita.fechaConfirmada)}</p>
                   </div>
                 ))}
               </div>

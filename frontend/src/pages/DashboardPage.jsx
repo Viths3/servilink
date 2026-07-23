@@ -851,7 +851,7 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
     // Validar tipo MIME
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if (!tiposPermitidos.includes(archivo.type)) {
-      setImagenError(`❌ ${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
+      setImagenError(`${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
       return false;
     }
 
@@ -859,20 +859,20 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
     const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
     const extension = archivo.name.split('.').pop().toLowerCase();
     if (!extensionesPermitidas.includes(extension)) {
-      setImagenError(`❌ ${archivo.name}: Extensión no permitida`);
+      setImagenError(`${archivo.name}: Extensión no permitida`);
       return false;
     }
 
     // Validar tamaño (máx 5MB)
     const tamanioMaxMB = 5;
     if (archivo.size > tamanioMaxMB * 1024 * 1024) {
-      setImagenError(`❌ ${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
+      setImagenError(`${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
       return false;
     }
 
     // Validar que no contenga caracteres peligrosos en el nombre
     if (/[<>:"|?*\\/]/.test(archivo.name)) {
-      setImagenError(`❌ ${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
+      setImagenError(`${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
       return false;
     }
 
@@ -1244,7 +1244,7 @@ export default function DashboardPage() {
         {/* Cabecera */}
         <div>
           <h1 className="text-2xl font-bold text-text">
-            Hola, {usuario?.nombre?.split(' ')[0]} 👋
+            Hola, {usuario?.nombre?.split(' ')[0]}
           </h1>
           <div className="flex flex-wrap gap-2 mt-2">
             {usuario?.roles?.map((r) => (

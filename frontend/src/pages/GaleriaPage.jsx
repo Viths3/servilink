@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import TutorialBienvenida from '../components/TutorialBienvenida';
 import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS, ICONOS_CATEGORIA } from '../lib/categorias';
+import { IconoLupa } from '../components/Iconos';
 
 const LIMIT = 9;
 
@@ -300,7 +301,7 @@ export default function GaleriaPage() {
           </div>
         ) : anuncios.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-5xl mb-4">🔍</p>
+            <div className="flex justify-center mb-4"><IconoLupa className="w-12 h-12 text-border" /></div>
             <p className="text-text font-semibold text-lg mb-2">Aún no hay servicios publicados</p>
             <p className="text-text-muted text-sm mb-6 max-w-md mx-auto">
               {filtros.categoria ? (
@@ -348,7 +349,7 @@ export default function GaleriaPage() {
       {/* ── Footer minimalista — estilo Apple ── */}
       <footer className="bg-surface border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
-          <p>© {new Date().getFullYear()} ServiLink · Cuenca, Ecuador 🏛️</p>
+          <p>© {new Date().getFullYear()} ServiLink · Cuenca, Ecuador</p>
           <div className="flex items-center gap-5">
             <Link to="/como-funciona" className="hover:text-text transition-colors">¿Cómo funciona?</Link>
             <Link to="/registro-proveedor" className="hover:text-text transition-colors">Ser proveedor</Link>

@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { IconoEscudo, IconoLupa, IconoChat, IconoCandado } from './Iconos';
 
 const STORAGE_KEY = 'servilink_tutorial_visto';
 
 const PASOS = [
   {
-    emoji: '🏛️',
+    Icono: IconoEscudo,
     titulo: 'Bienvenido a ServiLink',
     texto: 'En Cuenca, contratar un plomero, electricista o profesional confiable dependía del boca a boca. ServiLink existe para cambiar eso: cada proveedor pasa por verificación de identidad con su cédula antes de poder ofrecer servicios.',
   },
   {
-    emoji: '🔍',
+    Icono: IconoLupa,
     titulo: 'Busca y solicita',
     texto: 'Explora servicios por categoría o con el buscador. Cuando encuentres al profesional ideal, envíale una solicitud indicando qué necesitas y la fecha que prefieras. Él la acepta, la reagenda o te responde.',
   },
   {
-    emoji: '💬',
+    Icono: IconoChat,
     titulo: 'Coordina por chat',
     texto: 'Todo se conversa dentro de la app con la mensajería interna — sin compartir tu número. Además recibirás recordatorios por WhatsApp de tus citas próximas y acciones pendientes.',
   },
   {
-    emoji: '🔒',
+    Icono: IconoCandado,
     titulo: 'Paga protegido y califica',
     texto: 'Tu pago queda retenido por ServiLink y solo se libera al proveedor cuando el servicio se completa. Si algo sale mal, puedes abrir una disputa. Al final, deja tu reseña para ayudar a otros.',
   },
@@ -42,14 +43,16 @@ export default function TutorialBienvenida() {
   if (!visible) return null;
 
   const esUltimo = paso === PASOS.length - 1;
-  const { emoji, titulo, texto } = PASOS[paso];
+  const { Icono, titulo, texto } = PASOS[paso];
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
       <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Zona visual */}
         <div className="bg-linear-to-br from-primary/8 via-accent/10 to-secondary/8 py-12 flex items-center justify-center">
-          <span className="text-7xl select-none">{emoji}</span>
+          <div className="w-24 h-24 rounded-full bg-surface shadow-sm flex items-center justify-center">
+            <Icono className="w-11 h-11 text-primary" />
+          </div>
         </div>
 
         <div className="p-7 space-y-4">

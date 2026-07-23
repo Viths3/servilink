@@ -96,7 +96,7 @@ export default function ModalPerfil({ onCerrar }) {
     }
 
     if (!validarTelefono(telefonoInput)) {
-      setDatosError('❌ Teléfono inválido. Debe ser: 0912345678, +593912345678 o 593912345678 (9 dígitos después del código de país)');
+      setDatosError('Teléfono inválido. Debe ser: 0912345678, +593912345678 o 593912345678 (9 dígitos después del código de país)');
       return;
     }
 
@@ -120,7 +120,7 @@ export default function ModalPerfil({ onCerrar }) {
       if (passwordNueva) body.password = passwordNueva;
       const { data } = await api.patch('/api/users/me', body);
       actualizarUsuario({ nombre: data.data.nombre, telefono: data.data.telefono });
-      setDatosExito('✅ Datos actualizados correctamente.');
+      setDatosExito('Datos actualizados correctamente.');
       setPasswordActual('');
       setPasswordNueva('');
     } catch (err) {

@@ -381,7 +381,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
     // Validar tipo MIME
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
     if (!tiposPermitidos.includes(archivo.type)) {
-      setErrorArchivos(`❌ ${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
+      setErrorArchivos(`${archivo.name}: Solo se permiten imágenes JPG, PNG o WebP`);
       return false;
     }
 
@@ -389,20 +389,20 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
     const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'webp'];
     const extension = archivo.name.split('.').pop().toLowerCase();
     if (!extensionesPermitidas.includes(extension)) {
-      setErrorArchivos(`❌ ${archivo.name}: Extensión no permitida`);
+      setErrorArchivos(`${archivo.name}: Extensión no permitida`);
       return false;
     }
 
     // Validar tamaño (máx 5MB)
     const tamanioMaxMB = 5;
     if (archivo.size > tamanioMaxMB * 1024 * 1024) {
-      setErrorArchivos(`❌ ${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
+      setErrorArchivos(`${archivo.name}: Archivo muy grande (máx ${tamanioMaxMB}MB)`);
       return false;
     }
 
     // Validar que no contenga caracteres peligrosos en el nombre
     if (/[<>:"|?*\\/]/.test(archivo.name)) {
-      setErrorArchivos(`❌ ${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
+      setErrorArchivos(`${archivo.name}: Nombre de archivo contiene caracteres no permitidos`);
       return false;
     }
 
@@ -470,7 +470,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      setExito('✅ Anuncio actualizado correctamente');
+      setExito('Anuncio actualizado correctamente');
       setTimeout(() => {
         onGuardado(data.data);
       }, 1500);
@@ -724,10 +724,10 @@ export default function DetalleAnuncioPage() {
         estado: nuevoEstado,
       });
       setAnuncio(data.data);
-      setMensajeAdmin(`✅ Anuncio ${nuevoEstado} correctamente`);
+      setMensajeAdmin(`Anuncio ${nuevoEstado} correctamente`);
       setTimeout(() => setMensajeAdmin(''), 3000);
     } catch (err) {
-      setMensajeAdmin(`❌ Error: ${err.response?.data?.error ?? 'Error desconocido'}`);
+      setMensajeAdmin(`Error: ${err.response?.data?.error ?? 'Error desconocido'}`);
       setTimeout(() => setMensajeAdmin(''), 3000);
     } finally {
       setCargando(false);
@@ -749,7 +749,7 @@ export default function DetalleAnuncioPage() {
           onGuardado={(anuncioActualizado) => {
             setAnuncio(anuncioActualizado);
             setModalEditar(false);
-            setMensajeAdmin('✅ Anuncio actualizado correctamente');
+            setMensajeAdmin('Anuncio actualizado correctamente');
             setTimeout(() => setMensajeAdmin(''), 3000);
           }}
         />
@@ -844,7 +844,7 @@ export default function DetalleAnuncioPage() {
 
                     {mensajeAdmin && (
                       <p className={`text-xs px-3 py-2 rounded ${
-                        mensajeAdmin.startsWith('✅')
+                        !mensajeAdmin.startsWith('Error')
                           ? 'bg-success/10 text-success border border-success/20'
                           : 'bg-danger/10 text-danger border border-danger/20'
                       }`}>
