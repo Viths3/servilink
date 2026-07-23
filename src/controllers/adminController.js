@@ -11,6 +11,7 @@ const {
   notificarUpgradeRechazado,
   notificarAnuncioEditado,
   notificarAnuncioSuspendido,
+  notificarDisputaResuelta,
 } = require('../services/whatsappService');
 
 // ── RF-06: GET /api/admin/verifications ───────────────────────────
@@ -480,7 +481,9 @@ const resolverDisputaPago = async (req, res) => {
       return res.status(400).json({ error: 'La resolución debe ser "liberar" o "reembolsar"' });
     }
 
-    const pago = await Payment.findById(req.params.id);
+    const pago = await Payment.findById(req.params.id)
+      .populate('cliente', 'nombre telefono')
+      .populate('proveedor', 'nombre telefono');
     if (!pago) return res.status(404).json({ error: 'Pago no encontrado' });
     if (pago.estado !== 'en_disputa') {
       return res.status(409).json({ error: 'Este pago no tiene una disputa abierta' });
@@ -491,6 +494,14 @@ const resolverDisputaPago = async (req, res) => {
     pago.estado = resolucion === 'liberar' ? 'liberado' : 'fallido';
     if (resolucion === 'liberar') pago.fechaLiberacion = new Date();
     await pago.save();
+
+    const resultadoTexto = resolucion === 'liberar'
+      ? 'Se determinó que el servicio sí se completó — el pago será liberado al proveedor.'
+      : 'Se determinó reembolsar al cliente.';
+    await Promise.all([
+      notificarDisputaResuelta(pago.cliente.telefono, pago.cliente.nombre, resultadoTexto),
+      notificarDisputaResuelta(pago.proveedor.telefono, pago.proveedor.nombre, resultadoTexto),
+    ]);
 
     res.json({ mensaje: 'Disputa resuelta', data: pago });
   } catch (err) {

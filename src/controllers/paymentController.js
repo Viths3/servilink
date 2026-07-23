@@ -3,6 +3,7 @@ const Payment         = require('../models/Payment');
 const ServiceRequest  = require('../models/ServiceRequest');
 const payphoneService = require('../services/payphoneService');
 const { COMISION_PORCENTAJE, HORAS_RETENCION, modoLive } = require('../config/payments');
+const { notificarDisputaAbierta } = require('../services/whatsappService');
 
 // ── Libera automáticamente los pagos cuya ventana de disputa venció ──
 // Un pago 'retenido' pasa a 'liberado' cuando el servicio fue marcado
@@ -265,9 +266,11 @@ const disputarPago = async (req, res) => {
       return res.status(400).json({ error: 'El motivo de la disputa es requerido' });
     }
 
-    const pago = await Payment.findById(req.params.id);
+    const pago = await Payment.findById(req.params.id)
+      .populate('proveedor', 'nombre telefono')
+      .populate('cliente', 'nombre');
     if (!pago) return res.status(404).json({ error: 'Pago no encontrado' });
-    if (pago.cliente.toString() !== req.usuario._id.toString()) {
+    if (pago.cliente._id.toString() !== req.usuario._id.toString()) {
       return res.status(403).json({ error: 'No tienes permiso para disputar este cobro' });
     }
     if (!['retenido', 'liberado'].includes(pago.estado)) {
@@ -275,12 +278,52 @@ const disputarPago = async (req, res) => {
     }
 
     pago.estado   = 'en_disputa';
-    pago.disputa  = { motivo: motivo.trim(), fecha: new Date(), resuelta: false, resolucion: '' };
+    pago.disputa  = { motivo: motivo.trim(), fecha: new Date(), resuelta: false, resolucion: '', respuestaProveedor: null };
     await pago.save();
 
-    res.json({ mensaje: 'Disputa registrada. Un administrador la revisará.', data: pago });
+    // El proveedor tiene la oportunidad de responder con su versión y evidencia
+    // antes de que un admin decida (igual que el Resolution Center de Airbnb).
+    await notificarDisputaAbierta(pago.proveedor.telefono, pago.proveedor.nombre, pago.cliente.nombre, motivo.trim());
+
+    res.json({ mensaje: 'Disputa registrada. El proveedor puede responder antes de que un administrador decida.', data: pago });
   } catch (err) {
     console.error('disputarPago:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// ── POST /api/payments/:id/responder-disputa (auth, proveedor) ───
+// El proveedor presenta su versión y evidencia adicional mientras la
+// disputa está abierta y aún no ha respondido.
+const responderDisputa = async (req, res) => {
+  try {
+    const { texto } = req.body;
+    if (!texto?.trim()) {
+      return res.status(400).json({ error: 'La respuesta es requerida' });
+    }
+
+    const pago = await Payment.findById(req.params.id);
+    if (!pago) return res.status(404).json({ error: 'Pago no encontrado' });
+    if (pago.proveedor.toString() !== req.usuario._id.toString()) {
+      return res.status(403).json({ error: 'No tienes permiso para responder esta disputa' });
+    }
+    if (pago.estado !== 'en_disputa') {
+      return res.status(409).json({ error: 'Este pago no tiene una disputa abierta' });
+    }
+    if (pago.disputa.respuestaProveedor) {
+      return res.status(409).json({ error: 'Ya respondiste esta disputa' });
+    }
+
+    pago.disputa.respuestaProveedor = {
+      texto: texto.trim(),
+      evidencia: (req.files ?? []).map((f) => `/uploads/${f.filename}`),
+      fecha: new Date(),
+    };
+    await pago.save();
+
+    res.json({ mensaje: 'Respuesta enviada. Un administrador revisará ambas versiones.', data: pago });
+  } catch (err) {
+    console.error('responderDisputa:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -292,6 +335,7 @@ module.exports = {
   confirmarPagoPayphone,
   confirmarPago,
   disputarPago,
+  responderDisputa,
   liberarPagosVencidos,
   programarLiberacion,
 };

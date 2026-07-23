@@ -276,6 +276,67 @@ function PagoCliente({ solicitud, onUpdate }) {
   );
 }
 
+// ── Responder a una disputa de pago (vista proveedor) ─────────────
+function ResponderDisputa({ pago, onUpdate }) {
+  const [texto, setTexto]         = useState('');
+  const [evidencia, setEvidencia] = useState([]);
+  const [cargando, setCargando]   = useState(false);
+  const [error, setError]         = useState('');
+  const [enviado, setEnviado]     = useState(false);
+
+  if (pago.disputa?.respuestaProveedor || enviado) {
+    return <p className="text-xs text-text-muted">✓ Ya respondiste a esta disputa. Un administrador la resolverá.</p>;
+  }
+
+  const enviar = async () => {
+    setError('');
+    if (!texto.trim()) { setError('Explica tu versión de lo ocurrido.'); return; }
+    setCargando(true);
+    try {
+      const fd = new FormData();
+      fd.append('texto', texto.trim());
+      evidencia.forEach((file) => fd.append('evidencia', file));
+      const { data } = await api.post(`/api/payments/${pago._id}/responder-disputa`, fd);
+      onUpdate(data.data);
+      setEnviado(true);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al enviar tu respuesta.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-danger font-medium">
+        ⚠ El cliente reportó: "{pago.disputa?.motivo}" — puedes responder con tu versión y evidencia antes de que un admin decida.
+      </p>
+      <textarea
+        value={texto}
+        onChange={(e) => setTexto(e.target.value)}
+        rows={2}
+        placeholder="Cuenta tu versión de lo ocurrido…"
+        className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+      />
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        onChange={(e) => setEvidencia(Array.from(e.target.files ?? []).slice(0, 5))}
+        className="w-full text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+      />
+      {error && <p className="text-xs text-danger">{error}</p>}
+      <button
+        onClick={enviar}
+        disabled={cargando}
+        className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+      >
+        {cargando ? 'Enviando…' : 'Enviar respuesta'}
+      </button>
+    </div>
+  );
+}
+
 // ── Bloque de pago, vista PROVEEDOR (dentro de TarjetaRecibida) ───
 function PagoProveedor({ solicitud, onUpdate }) {
   const [modo, setModo]         = useState(false);
@@ -305,7 +366,7 @@ function PagoProveedor({ solicitud, onUpdate }) {
           <p className="text-xs text-success font-medium">✓ Pagado (${pago.montoProveedor.toFixed(2)}) · Ref: {pago.referenciaTransferencia}</p>
         )}
         {pago.estado === 'en_disputa' && (
-          <p className="text-xs text-danger">⚠ El cliente reportó un problema — un administrador lo está revisando</p>
+          <ResponderDisputa pago={pago} onUpdate={(nuevoPago) => onUpdate(solicitud._id, { pago: nuevoPago })} />
         )}
       </div>
     );

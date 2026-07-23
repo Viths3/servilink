@@ -104,6 +104,14 @@ const notificarAnuncioEditado = (telefono, nombre, tituloAnuncio, motivo) =>
 const notificarAnuncioSuspendido = (telefono, nombre, tituloAnuncio, motivo) =>
   sendWhatsApp(telefono, 'anuncio_suspendido', [nombre, tituloAnuncio, motivo]);
 
+// Pagos: disputa abierta por el cliente (al proveedor) — tiene 48h para responder
+const notificarDisputaAbierta = (telefono, nombreProveedor, nombreCliente, motivo) =>
+  sendWhatsApp(telefono, 'disputa_abierta', [nombreProveedor, nombreCliente, motivo]);
+
+// Pagos: disputa resuelta por un admin (a cliente y proveedor)
+const notificarDisputaResuelta = (telefono, nombre, resolucion) =>
+  sendWhatsApp(telefono, 'disputa_resuelta', [nombre, resolucion]);
+
 module.exports = {
   sendWhatsApp,
   notificarVerificacionAprobada,
@@ -117,4 +125,6 @@ module.exports = {
   notificarUpgradeRechazado,
   notificarAnuncioEditado,
   notificarAnuncioSuspendido,
+  notificarDisputaAbierta,
+  notificarDisputaResuelta,
 };

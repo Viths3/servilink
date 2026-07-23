@@ -1241,11 +1241,14 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
             {' · '}A pagar al proveedor: <span className="font-semibold text-primary">${pago.montoProveedor.toFixed(2)}</span>
           </p>
           {pago.disputa?.motivo && (
-            <p className="text-xs text-danger mt-1">Motivo de disputa: {pago.disputa.motivo}</p>
+            <div className="mt-2 bg-danger/5 border border-danger/20 rounded-lg p-2.5">
+              <p className="text-xs font-semibold text-danger">Versión del cliente:</p>
+              <p className="text-xs text-text mt-0.5">{pago.disputa.motivo}</p>
+            </div>
           )}
           {pago.solicitud?.evidenciaCompletado?.length > 0 && (
             <div className="mt-2">
-              <p className="text-xs text-text-muted mb-1">Evidencia subida por el proveedor:</p>
+              <p className="text-xs text-text-muted mb-1">Evidencia subida al completar el servicio:</p>
               <div className="flex gap-1.5 flex-wrap">
                 {pago.solicitud.evidenciaCompletado.map((path) => (
                   <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
@@ -1254,6 +1257,24 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
                 ))}
               </div>
             </div>
+          )}
+          {pago.disputa?.respuestaProveedor && (
+            <div className="mt-2 bg-primary/5 border border-primary/20 rounded-lg p-2.5">
+              <p className="text-xs font-semibold text-primary">Versión del proveedor:</p>
+              <p className="text-xs text-text mt-0.5">{pago.disputa.respuestaProveedor.texto}</p>
+              {pago.disputa.respuestaProveedor.evidencia?.length > 0 && (
+                <div className="flex gap-1.5 flex-wrap mt-1.5">
+                  {pago.disputa.respuestaProveedor.evidencia.map((path) => (
+                    <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
+                      <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {pago.estado === 'en_disputa' && !pago.disputa?.respuestaProveedor && (
+            <p className="text-xs text-text-muted italic mt-2">El proveedor aún no ha respondido a esta disputa.</p>
           )}
         </div>
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${

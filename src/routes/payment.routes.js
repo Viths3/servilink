@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
 const role = require('../middlewares/role.middleware');
+const { uploadEvidencia, handleUploadError } = require('../middlewares/upload.middleware');
 const {
   crearPago,
   getMisPagos,
@@ -8,6 +9,7 @@ const {
   confirmarPagoPayphone,
   confirmarPago,
   disputarPago,
+  responderDisputa,
 } = require('../controllers/paymentController');
 
 /**
@@ -184,5 +186,42 @@ router.post('/:id/confirm', confirmarPago);
  *         description: Disputa registrada.
  */
 router.post('/:id/disputar', disputarPago);
+
+/**
+ * @openapi
+ * /api/payments/{id}/responder-disputa:
+ *   post:
+ *     tags: [Pagos]
+ *     summary: Responder a una disputa abierta (proveedor)
+ *     description: >
+ *       El proveedor presenta su versión y evidencia adicional antes de
+ *       que un administrador resuelva la disputa — solo se puede
+ *       responder una vez.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [texto]
+ *             properties:
+ *               texto:     { type: string }
+ *               evidencia:
+ *                 type: array
+ *                 items: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Respuesta registrada.
+ *       409:
+ *         description: No hay disputa abierta o ya respondiste.
+ */
+router.post('/:id/responder-disputa', role('proveedor'), uploadEvidencia, handleUploadError, responderDisputa);
 
 module.exports = router;

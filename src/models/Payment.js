@@ -1,11 +1,24 @@
 const mongoose = require('mongoose');
 
+// Respuesta del proveedor a la disputa — su oportunidad de presentar su
+// versión y evidencia antes de que un admin decida (como en el Resolution
+// Center de Airbnb: la otra parte responde antes de escalar a soporte).
+const respuestaProveedorSchema = new mongoose.Schema(
+  {
+    texto:     { type: String, required: true, trim: true },
+    evidencia: [{ type: String }],
+    fecha:     { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const disputaSchema = new mongoose.Schema(
   {
-    motivo:    { type: String, required: true, trim: true },
-    fecha:     { type: Date, default: Date.now },
-    resuelta:  { type: Boolean, default: false },
-    resolucion: { type: String, enum: ['', 'liberar', 'reembolsar'], default: '' },
+    motivo:            { type: String, required: true, trim: true },
+    fecha:             { type: Date, default: Date.now },
+    resuelta:          { type: Boolean, default: false },
+    resolucion:        { type: String, enum: ['', 'liberar', 'reembolsar'], default: '' },
+    respuestaProveedor: { type: respuestaProveedorSchema, default: null },
   },
   { _id: false }
 );
