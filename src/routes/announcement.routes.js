@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
-const { uploadImagenes, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadImagenes, handleUploadError, verificarImagenes } = require('../middlewares/upload.middleware');
 const {
   listarAnuncios,
   obtenerAnuncio,
@@ -131,7 +131,7 @@ router.get('/:id', obtenerAnuncio);
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', auth, uploadImagenes, handleUploadError, crearAnuncio);
+router.post('/', auth, uploadImagenes, handleUploadError, verificarImagenes, crearAnuncio);
 
 /**
  * @openapi
@@ -180,7 +180,7 @@ router.post('/', auth, uploadImagenes, handleUploadError, crearAnuncio);
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.patch('/:id', auth, uploadImagenes, handleUploadError, editarAnuncio);
+router.patch('/:id', auth, uploadImagenes, handleUploadError, verificarImagenes, editarAnuncio);
 
 /**
  * @openapi

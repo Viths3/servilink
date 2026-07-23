@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
 const role = require('../middlewares/role.middleware');
-const { uploadEvidencia, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadEvidencia, handleUploadError, verificarImagenes } = require('../middlewares/upload.middleware');
 const {
   crearPago,
   getMisPagos,
@@ -222,6 +222,6 @@ router.post('/:id/disputar', disputarPago);
  *       409:
  *         description: No hay disputa abierta o ya respondiste.
  */
-router.post('/:id/responder-disputa', role('proveedor'), uploadEvidencia, handleUploadError, responderDisputa);
+router.post('/:id/responder-disputa', role('proveedor'), uploadEvidencia, handleUploadError, verificarImagenes, responderDisputa);
 
 module.exports = router;

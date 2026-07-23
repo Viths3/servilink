@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
     fotoPerfil:   { type: String, default: '' },
     activo:       { type: Boolean, default: true },
     providerData: { type: providerDataSchema, default: null },
+    // Se actualiza cada vez que cambia la contraseña. auth.middleware.js la
+    // compara contra el "iat" del JWT para invalidar tokens emitidos antes
+    // de un cambio de contraseña, aunque aún no hayan expirado.
+    passwordChangedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -62,6 +66,9 @@ userSchema.index({ roles: 1 });
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  // Restar 1s de margen: el JWT se emite con "iat" en segundos y puede
+  // redondear hacia abajo respecto a este timestamp con milisegundos.
+  if (!this.isNew) this.passwordChangedAt = new Date(Date.now() - 1000);
   next();
 });
 

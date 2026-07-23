@@ -1,13 +1,37 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
+const esProduccion = process.env.NODE_ENV === 'production';
+
+// Railway (y cualquier hosting con proxy inverso) termina TLS en su borde y
+// reenvía por HTTP interno, indicando el esquema real vía X-Forwarded-Proto.
+// Sin esto, req.protocol siempre reporta 'http', lo que generaría URLs de
+// retorno de PayPhone inseguras (ver paymentController.iniciarPago).
+app.set('trust proxy', 1);
+
 // ── MIDDLEWARES GLOBALES ──────────────────────────────────────────
-app.use(cors());
+// La CSP por defecto de helmet solo permite imágenes propias/data: — el
+// frontend todavía usa algunos íconos servidos desde Flaticon, así que se
+// permite explícitamente ese host en vez de desactivar la política entera.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'img-src': ["'self'", 'data:', 'https://cdn-icons-png.flaticon.com'],
+    },
+  },
+}));
+// Restringe CORS al origen público conocido en producción; en desarrollo
+// se permite cualquier origen para no trabar el flujo local con Vite.
+app.use(cors({
+  origin: esProduccion ? (process.env.PUBLIC_URL || true) : true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -15,9 +39,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ── SWAGGER UI ────────────────────────────────────────────────────
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'ServiLink API Docs',
-}));
+// Solo se expone fuera de producción: documenta toda la superficie de la
+// API (incluidos endpoints de admin) y no debe ser pública en vivo.
+if (!esProduccion) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'ServiLink API Docs',
+  }));
+}
 
 // ── RUTAS ─────────────────────────────────────────────────────────
 // Sprint 1: Auth
@@ -42,18 +70,19 @@ app.get('/api/health', (req, res) => {
   res.json({ mensaje: 'ServiLink API v1.0', estado: 'activo' });
 });
 
-// ── MANEJO DE RUTAS NO ENCONTRADAS ───────────────────────────────
-// Comentado en producción: el 404 lo maneja React Router del frontend
-// y server.js sirve index.html para todas las rutas no API
-// app.use((req, res) => {
-//   res.status(404).json({ error: 'Ruta no encontrada' });
-// });
+// ── MANEJO DE RUTAS /api NO ENCONTRADAS ──────────────────────────
+// El 404 de las rutas del frontend lo maneja React Router (server.js sirve
+// index.html), pero un /api/* que no matchea ningún router debe responder
+// 404 explícito en vez de quedar sin respuesta.
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
 
 // ── MANEJO GLOBAL DE ERRORES ─────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
-    error: err.message || 'Error interno del servidor',
+    error: esProduccion ? 'Error interno del servidor' : (err.message || 'Error interno del servidor'),
   });
 });
 

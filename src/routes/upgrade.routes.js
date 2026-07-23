@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
 const role = require('../middlewares/role.middleware');
-const { uploadDocs, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadDocs, handleUploadError, verificarDocumentos } = require('../middlewares/upload.middleware');
 const { solicitarUpgrade, getMiSolicitud } = require('../controllers/upgradeController');
 
 /**
@@ -66,7 +66,7 @@ const { solicitarUpgrade, getMiSolicitud } = require('../controllers/upgradeCont
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', auth, role('cliente'), uploadDocs, handleUploadError, solicitarUpgrade);
+router.post('/', auth, role('cliente'), uploadDocs, handleUploadError, verificarDocumentos, solicitarUpgrade);
 
 /**
  * @openapi

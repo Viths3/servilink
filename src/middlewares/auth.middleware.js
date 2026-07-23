@@ -19,6 +19,16 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ error: 'Token inválido o cuenta desactivada' });
     }
 
+    // Si la contraseña cambió después de emitirse este token, invalidarlo
+    // aunque todavía no haya expirado (evita que un token robado siga
+    // funcionando después de que el usuario cambia su contraseña).
+    if (usuario.passwordChangedAt) {
+      const cambiadaEnSegundos = Math.floor(usuario.passwordChangedAt.getTime() / 1000);
+      if (decoded.iat < cambiadaEnSegundos) {
+        return res.status(401).json({ error: 'Tu sesión expiró porque la contraseña cambió. Inicia sesión nuevamente.' });
+      }
+    }
+
     // Adjuntar usuario al request para uso en controladores
     req.usuario = usuario;
     next();

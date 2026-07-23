@@ -19,6 +19,15 @@ const CATEGORIAS = [
 ];
 
 async function seed() {
+  // Este script BORRA toda la colección de usuarios y anuncios antes de
+  // insertar datos de prueba. Nunca debe poder correr contra producción por
+  // accidente (ej. copiar el comando equivocado con el .env de prod cargado).
+  if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_DESTRUCTIVE_SEED) {
+    console.error('Este script borra la base de datos y está bloqueado en producción.');
+    console.error('Define ALLOW_DESTRUCTIVE_SEED=yes si de verdad quieres ejecutarlo aquí.');
+    process.exit(1);
+  }
+
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Conectado a MongoDB');

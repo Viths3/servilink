@@ -2,6 +2,12 @@ const Announcement = require('../models/Announcement');
 
 const ORDENES_VALIDOS = ['recientes', 'precio_asc', 'precio_desc', 'calificacion'];
 
+// Escapa metacaracteres de regex antes de usar un string de búsqueda del
+// usuario en un new RegExp() — sin esto, un patrón como "(a+)+$" puede
+// causar backtracking catastrófico (ReDoS) en este endpoint público y sin
+// autenticación.
+const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // ── RF-08 / RF-20: GET /api/announcements (público) ──────────────
 // Soporta filtros: categoria, search (título/descripción), sort. Paginado.
 const listarAnuncios = async (req, res) => {
@@ -23,7 +29,7 @@ const listarAnuncios = async (req, res) => {
     }
 
     if (search) {
-      const regex = new RegExp(search.trim(), 'i');
+      const regex = new RegExp(escaparRegex(search.trim()), 'i');
       filtro.$or = [{ titulo: regex }, { descripcion: regex }];
     }
 

@@ -1,6 +1,16 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+// file-type es ESM-only (no se puede require() directo desde CommonJS sin
+// arriesgar romper el arranque en versiones de Node <22) — se importa de
+// forma dinámica y perezosa, compatible con cualquier versión de Node.
+let fileTypeFromFilePromise;
+const getFileTypeFromFile = () => {
+  if (!fileTypeFromFilePromise) {
+    fileTypeFromFilePromise = import('file-type').then((mod) => mod.fileTypeFromFile);
+  }
+  return fileTypeFromFilePromise;
+};
 
 // Crear carpeta uploads si no existe
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -82,6 +92,44 @@ const uploadImagenes = upload.array('imagenes', 5);
 // Para evidencia de servicio completado (hasta 5 archivos)
 const uploadEvidencia = upload.array('evidencia', 5);
 
+// ── Verificación del contenido real del archivo (magic bytes) ────
+// El fileFilter de arriba solo valida el MIME/extensión que el cliente
+// DECLARA, que puede falsificarse. Esta verificación se ejecuta después de
+// que multer ya guardó el archivo, e inspecciona sus bytes reales — si no
+// coincide con un tipo permitido, se borra y se rechaza la petición.
+const listaArchivos = (req) => {
+  if (Array.isArray(req.files)) return req.files;
+  if (req.files && typeof req.files === 'object') return Object.values(req.files).flat();
+  if (req.file) return [req.file];
+  return [];
+};
+
+const verificarContenidoReal = (tiposPermitidos) => async (req, res, next) => {
+  const archivos = listaArchivos(req);
+  if (archivos.length === 0) return next();
+
+  try {
+    const fileTypeFromFile = await getFileTypeFromFile();
+    for (const archivo of archivos) {
+      const tipoReal = await fileTypeFromFile(archivo.path);
+      if (!tipoReal || !tiposPermitidos.includes(tipoReal.mime)) {
+        archivos.forEach((a) => fs.unlink(a.path, () => {}));
+        return res.status(400).json({ error: 'El contenido de uno de los archivos no coincide con un tipo de archivo permitido.' });
+      }
+    }
+    next();
+  } catch (err) {
+    console.error('verificarContenidoReal:', err);
+    archivos.forEach((a) => fs.unlink(a.path, () => {}));
+    res.status(500).json({ error: 'Error al validar el archivo subido.' });
+  }
+};
+
+// Para fotos de perfil, imágenes de anuncio y evidencia (solo imágenes)
+const verificarImagenes = verificarContenidoReal(['image/jpeg', 'image/png', 'image/webp']);
+// Para documentos de verificación (imagen o PDF)
+const verificarDocumentos = verificarContenidoReal(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
+
 // Manejo de errores de Multer
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -96,4 +144,12 @@ const handleUploadError = (err, req, res, next) => {
   next();
 };
 
-module.exports = { uploadDocs, uploadFoto, uploadImagenes, uploadEvidencia, handleUploadError };
+module.exports = {
+  uploadDocs,
+  uploadFoto,
+  uploadImagenes,
+  uploadEvidencia,
+  handleUploadError,
+  verificarImagenes,
+  verificarDocumentos,
+};

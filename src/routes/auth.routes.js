@@ -8,8 +8,9 @@ const {
   logout,
 } = require('../controllers/authController');
 
-const { uploadDocs, uploadFoto, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadDocs, uploadFoto, handleUploadError, verificarImagenes, verificarDocumentos } = require('../middlewares/upload.middleware');
 const authMiddleware = require('../middlewares/auth.middleware');
+const { loginLimiter, registroLimiter } = require('../middlewares/rateLimit.middleware');
 
 /**
  * @openapi
@@ -59,7 +60,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/register', uploadFoto, handleUploadError, registrarCliente);
+router.post('/register', registroLimiter, uploadFoto, handleUploadError, verificarImagenes, registrarCliente);
 
 /**
  * @openapi
@@ -112,7 +113,7 @@ router.post('/register', uploadFoto, handleUploadError, registrarCliente);
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/register-provider', uploadDocs, handleUploadError, registrarProveedor);
+router.post('/register-provider', registroLimiter, uploadDocs, handleUploadError, verificarDocumentos, registrarProveedor);
 
 /**
  * @openapi
@@ -147,7 +148,7 @@ router.post('/register-provider', uploadDocs, handleUploadError, registrarProvee
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
 
 /**
  * @openapi

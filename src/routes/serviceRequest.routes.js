@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
 const role = require('../middlewares/role.middleware');
-const { uploadEvidencia, handleUploadError } = require('../middlewares/upload.middleware');
+const { uploadEvidencia, handleUploadError, verificarImagenes } = require('../middlewares/upload.middleware');
 const {
   enviarSolicitud,
   getSolicitudesEnviadas,
@@ -358,7 +358,7 @@ router.patch('/:id/reject-reschedule', rechazarReagendamiento);
  *       409:
  *         description: La solicitud no está en estado aceptada.
  */
-router.patch('/:id/complete', role('proveedor'), uploadEvidencia, handleUploadError, completarSolicitud);
+router.patch('/:id/complete', role('proveedor'), uploadEvidencia, handleUploadError, verificarImagenes, completarSolicitud);
 
 /**
  * @openapi

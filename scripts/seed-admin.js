@@ -3,8 +3,20 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const ADMIN_EMAIL    = 'admin@servilink.com';
-const ADMIN_PASSWORD = 'admin12345678';
+// Nunca hardcodear credenciales de admin: ambas se exigen por variable de
+// entorno y la contraseña NUNCA se imprime en consola/logs (ni siquiera la
+// que puso quien ejecuta el script) — evita que quede en logs de Railway/CI.
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('Define ADMIN_EMAIL y ADMIN_INITIAL_PASSWORD como variables de entorno antes de ejecutar este script.');
+  process.exit(1);
+}
+if (ADMIN_PASSWORD.length < 12) {
+  console.error('ADMIN_INITIAL_PASSWORD debe tener al menos 12 caracteres.');
+  process.exit(1);
+}
 
 async function main() {
   await mongoose.connect(process.env.MONGODB_URI);
@@ -45,7 +57,7 @@ async function main() {
       roles:    ['admin'],
     });
     console.log(`✔  Usuario administrador creado: ${ADMIN_EMAIL}`);
-    console.log(`   Contraseña inicial: ${ADMIN_PASSWORD}  ← cámbiala tras el primer login`);
+    console.log('   Usa la contraseña que definiste en ADMIN_INITIAL_PASSWORD para iniciar sesión.');
   }
 }
 
