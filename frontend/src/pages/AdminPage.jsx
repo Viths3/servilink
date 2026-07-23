@@ -25,7 +25,7 @@ function Skeleton({ filas = 3 }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: filas }).map((_, i) => (
-        <div key={i} className="h-16 bg-white/10 rounded-xl animate-pulse" />
+        <div key={i} className="h-16 bg-border/60 rounded-2xl animate-pulse" />
       ))}
     </div>
   );
@@ -33,8 +33,8 @@ function Skeleton({ filas = 3 }) {
 
 function Vacio({ texto }) {
   return (
-    <div className="bg-white/10 rounded-xl px-5 py-10 text-center">
-      <p className="text-sm text-white/60">{texto}</p>
+    <div className="bg-background border border-border rounded-2xl px-5 py-10 text-center">
+      <p className="text-sm text-text-muted">{texto}</p>
     </div>
   );
 }
@@ -84,7 +84,7 @@ function TabEstadisticas({ onNavigate }) {
           <div
             key={label}
             onClick={() => tabIndex !== undefined && onNavigate(tabIndex)}
-            className={`bg-white rounded-xl p-5 space-y-1 shadow-sm ${
+            className={`bg-surface border border-border rounded-2xl p-5 space-y-1 shadow-sm ${
               tabIndex !== undefined ? 'cursor-pointer hover:shadow-md hover:ring-2 hover:ring-primary transition-all' : ''
             }`}
           >
@@ -96,7 +96,7 @@ function TabEstadisticas({ onNavigate }) {
       </div>
 
       {/* Desglose solicitudes por estado */}
-      <div className="bg-white rounded-xl p-5 shadow-sm">
+      <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
         <h3 className="text-sm font-semibold text-text mb-3">Solicitudes por estado</h3>
         <div className="flex flex-wrap gap-3">
           {Object.entries(stats.solicitudes.porEstado).map(([estado, total]) => (
@@ -109,7 +109,7 @@ function TabEstadisticas({ onNavigate }) {
       </div>
 
       {/* Desglose anuncios */}
-      <div className="bg-white rounded-xl p-5 shadow-sm">
+      <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
         <h3 className="text-sm font-semibold text-text mb-3">Anuncios</h3>
         <div className="flex flex-wrap gap-3">
           {[
@@ -155,7 +155,7 @@ function TarjetaVerificacion({ proveedor, onProcesado }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 space-y-3">
+    <div className="bg-surface border border-border rounded-2xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-text">{proveedor.nombre}</p>
@@ -746,7 +746,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
             <div className="border-t border-border pt-6 space-y-4">
               <h4 className="text-sm font-semibold text-text">Información profesional</h4>
               {loading ? (
-                <div className="h-20 bg-white/10 rounded-xl animate-pulse" />
+                <div className="h-20 bg-border/60 rounded-2xl animate-pulse" />
               ) : detalles ? (
                 <div className="space-y-3">
                   {detalles.verificationStatus && (
@@ -996,9 +996,9 @@ function TabUsuarios() {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-white/60">{total} usuarios registrados</p>
+      <p className="text-xs text-text-muted">{total} usuarios registrados</p>
 
-      <div className="bg-white rounded-xl overflow-x-auto shadow-sm">
+      <div className="bg-surface border border-border rounded-2xl overflow-x-auto shadow-sm">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-border">
@@ -1021,15 +1021,15 @@ function TabUsuarios() {
           <button
             onClick={() => setPage((p) => p - 1)}
             disabled={page === 1}
-            className="px-3 py-1.5 text-xs rounded-lg border border-white/20 text-white/70 hover:text-white disabled:opacity-40 transition-colors"
+            className="px-3 py-1.5 text-xs rounded-full border border-border text-text-muted hover:text-text disabled:opacity-40 transition-colors"
           >
             ← Anterior
           </button>
-          <span className="text-xs text-white/60">{page} / {totalPages}</span>
+          <span className="text-xs text-text-muted">{page} / {totalPages}</span>
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-xs rounded-lg border border-white/20 text-white/70 hover:text-white disabled:opacity-40 transition-colors"
+            className="px-3 py-1.5 text-xs rounded-full border border-border text-text-muted hover:text-text disabled:opacity-40 transition-colors"
           >
             Siguiente →
           </button>
@@ -1076,7 +1076,7 @@ function TarjetaReportado({ anuncio, onGestionado }) {
   const reportesNoRevisados = anuncio.reportes?.filter((r) => !r.revisado) ?? [];
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 space-y-3">
+    <div className="bg-surface border border-border rounded-2xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-text truncate">{anuncio.titulo}</p>
@@ -1228,7 +1228,7 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 space-y-2">
+    <div className="bg-surface border border-border rounded-2xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-text">{pago.solicitud?.descripcion ?? 'Servicio'}</p>
@@ -1377,7 +1377,7 @@ function TabPagos() {
             key={f.value}
             onClick={() => setFiltro(f.value)}
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-              filtro === f.value ? 'bg-white text-primary' : 'bg-white/10 text-white/70 hover:text-white'
+              filtro === f.value ? 'bg-primary text-white' : 'bg-surface border border-border text-text-muted hover:text-text'
             }`}
           >
             {f.label}
@@ -1406,26 +1406,26 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-background">
       <NavbarDashboard badge="Admin" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Cabecera */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Panel de administración</h1>
-          <p className="text-sm text-white/60 mt-1">Gestión general de ServiLink</p>
+          <h1 className="text-2xl font-bold text-text">Panel de administración</h1>
+          <p className="text-sm text-text-muted mt-1">Gestión general de ServiLink</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-1 bg-white/10 p-1 rounded-xl w-fit">
+        <div className="flex flex-wrap gap-1 bg-border/50 p-1 rounded-full w-fit">
           {TABS.map((tab, i) => (
             <button
               key={tab}
               onClick={() => setTabActiva(i)}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
                 tabActiva === i
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-white/70 hover:text-white'
+                  ? 'bg-surface text-text shadow-sm'
+                  : 'text-text-muted hover:text-text'
               }`}
             >
               {tab}

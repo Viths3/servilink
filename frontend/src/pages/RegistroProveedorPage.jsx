@@ -96,7 +96,7 @@ export default function RegistroProveedorPage() {
             </p>
             <Link
               to="/login"
-              className="inline-block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors"
+              className="inline-block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-full transition-colors"
             >
               Ir al inicio de sesión
             </Link>
@@ -192,7 +192,7 @@ export default function RegistroProveedorPage() {
                   onChange={handleChange}
                   rows={3}
                   placeholder="Cuéntanos sobre tu experiencia y los servicios que ofreces…"
-                  className="w-full px-4 py-2.5 rounded-lg border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface resize-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface resize-none"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export default function RegistroProveedorPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? 'Enviando solicitud…' : 'Registrarme como proveedor'}
               </button>
@@ -281,7 +281,7 @@ function Field({ label, name, type = 'text', value, onChange, onBlur, placeholde
         onBlur={onBlur}
         placeholder={placeholder}
         required={required}
-        className="w-full px-4 py-2.5 rounded-lg border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
+        className="w-full px-4 py-2.5 rounded-xl border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
       />
     </div>
   );

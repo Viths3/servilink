@@ -47,7 +47,7 @@ function Skeleton({ filas = 2 }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: filas }).map((_, i) => (
-        <div key={i} className="h-20 bg-white/10 rounded-xl animate-pulse" />
+        <div key={i} className="h-20 bg-border/60 rounded-2xl animate-pulse" />
       ))}
     </div>
   );
@@ -55,8 +55,8 @@ function Skeleton({ filas = 2 }) {
 
 function Vacio({ texto }) {
   return (
-    <div className="bg-white/10 rounded-xl px-5 py-8 text-center">
-      <p className="text-sm text-white/60">{texto}</p>
+    <div className="bg-background border border-border rounded-2xl px-5 py-8 text-center">
+      <p className="text-sm text-text-muted">{texto}</p>
     </div>
   );
 }
@@ -487,7 +487,7 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
   const puedeCalificar = solicitud.estado === 'completada' && !solicitud.calificada;
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-4">
+    <div className="bg-surface border border-border rounded-2xl p-4 flex items-start justify-between gap-4">
       {modalResena && (
         <ModalResena
           solicitud={solicitud}
@@ -614,7 +614,7 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 space-y-3">
+    <div className="bg-surface border border-border rounded-2xl p-4 space-y-3">
       {/* Cabecera */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -761,7 +761,7 @@ function TarjetaAnuncio({ anuncio, onEditar, onEliminar }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-3">
+    <div className="bg-surface border border-border rounded-2xl p-4 flex items-start justify-between gap-3">
       <div className="flex-1 min-w-0">
         <Link
           to={`/anuncios/${anuncio._id}`}
@@ -1134,7 +1134,7 @@ function PestanaProveedor({ usuarioId }) {
 
       {/* Solicitudes recibidas */}
       <section>
-        <h2 className="text-base font-semibold text-white/90 mb-3">Solicitudes recibidas</h2>
+        <h2 className="text-base font-semibold text-text mb-3">Solicitudes recibidas</h2>
         {loadRec ? (
           <Skeleton />
         ) : recibidas.length === 0 ? (
@@ -1151,10 +1151,10 @@ function PestanaProveedor({ usuarioId }) {
       {/* Mis anuncios */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-white/90">Mis anuncios</h2>
+          <h2 className="text-base font-semibold text-text">Mis anuncios</h2>
           <button
             onClick={() => setModalAnuncio(false)}
-            className="flex items-center gap-1.5 text-xs font-semibold bg-white text-primary hover:bg-white/90 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-white hover:bg-primary-dark px-3 py-1.5 rounded-full transition-colors"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
@@ -1201,7 +1201,7 @@ function PestanaCliente() {
 
   return (
     <section>
-      <h2 className="text-base font-semibold text-white/90 mb-3">Mis solicitudes enviadas</h2>
+      <h2 className="text-base font-semibold text-text mb-3">Mis solicitudes enviadas</h2>
       {loading ? (
         <Skeleton />
       ) : enviadas.length === 0 ? (
@@ -1233,18 +1233,18 @@ export default function DashboardPage() {
   const [pestana, setPestana] = useState(esProveedor ? 'proveedor' : 'cliente');
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-background">
       <NavbarDashboard />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Cabecera */}
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-text">
             Hola, {usuario?.nombre?.split(' ')[0]} 👋
           </h1>
           <div className="flex flex-wrap gap-2 mt-2">
             {usuario?.roles?.map((r) => (
-              <span key={r} className="text-xs font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full capitalize">
+              <span key={r} className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full capitalize">
                 {r}
               </span>
             ))}
@@ -1253,7 +1253,7 @@ export default function DashboardPage() {
 
         {/* Pestañas — solo si tiene rol dual */}
         {rolDual && (
-          <div className="flex gap-1 bg-white/10 p-1 rounded-xl w-fit">
+          <div className="flex gap-1 bg-border/50 p-1 rounded-full w-fit">
             {[
               { key: 'proveedor', label: 'Como proveedor' },
               { key: 'cliente',   label: 'Como cliente' },
@@ -1263,8 +1263,8 @@ export default function DashboardPage() {
                 onClick={() => setPestana(key)}
                 className={`px-5 py-2 text-sm font-semibold rounded-lg transition-colors ${
                   pestana === key
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-white/70 hover:text-white'
+                    ? 'bg-surface text-text shadow-sm'
+                    : 'text-text-muted hover:text-text'
                 }`}
               >
                 {label}
@@ -1286,7 +1286,7 @@ export default function DashboardPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/"
-              className="text-sm font-medium bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors"
+              className="text-sm font-medium border border-border hover:bg-background text-text px-4 py-2 rounded-full transition-colors bg-surface"
             >
               Explorar servicios
             </Link>
@@ -1295,7 +1295,7 @@ export default function DashboardPage() {
                 onClick={() => navigate('/registro-proveedor', {
                   state: { nombre: usuario?.nombre, telefono: usuario?.telefono },
                 })}
-                className="text-sm font-medium bg-white text-primary hover:bg-white/90 px-4 py-2 rounded-lg transition-colors"
+                className="text-sm font-medium bg-primary text-white hover:bg-primary-dark px-4 py-2 rounded-full transition-colors"
               >
                 Convertirme en proveedor
               </button>

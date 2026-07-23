@@ -63,16 +63,19 @@ export default function ComoFuncionaPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* ── HERO con Skyline de Cuenca ── */}
-      <section className="pt-28 pb-20 px-4 bg-linear-to-br from-primary to-primary-dark text-white text-center">
+      {/* ── HERO claro con Skyline de Cuenca ── */}
+      <section className="pt-32 pb-16 px-4 bg-surface text-center">
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Skyline de Cuenca */}
           <SkylineCuenca />
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            ¿Cómo funciona ServiLink?
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-text leading-[1.1]">
+            ¿Cómo funciona{' '}
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-primary-light to-accent">
+              ServiLink
+            </span>?
           </h1>
-          <p className="text-white/85 text-base sm:text-lg leading-relaxed">
+          <p className="text-text-muted text-base sm:text-lg leading-relaxed font-light max-w-2xl mx-auto">
             En Cuenca, miles de electricistas, plomeros, médicos y profesionales
             independientes trabajan sin visibilidad digital. ServiLink cambia eso.
             Conectamos la oferta de servicios verificados con la demanda real de
@@ -243,7 +246,7 @@ export default function ComoFuncionaPage() {
           <div className="text-center">
             <Link
               to="/registro-proveedor"
-              className="inline-block px-6 py-3 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors"
+              className="inline-block px-6 py-3 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-full transition-colors"
             >
               Registrarme como proveedor
             </Link>
@@ -262,13 +265,13 @@ export default function ComoFuncionaPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link
               to="/"
-              className="px-6 py-3 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors"
+              className="px-6 py-3 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-full transition-colors"
             >
               Explorar servicios
             </Link>
             <Link
               to="/registro"
-              className="px-6 py-3 border border-primary text-primary hover:bg-primary/5 text-sm font-semibold rounded-lg transition-colors"
+              className="px-6 py-3 border border-primary text-primary hover:bg-primary/5 text-sm font-semibold rounded-full transition-colors"
             >
               Registrarme
             </Link>

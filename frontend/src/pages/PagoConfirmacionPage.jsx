@@ -34,10 +34,10 @@ export default function PagoConfirmacionPage() {
   }, [pagoId, searchParams]);
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-background">
       <NavbarDashboard />
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="bg-white rounded-2xl shadow-sm p-8 space-y-4">
+        <div className="bg-surface border border-border rounded-3xl shadow-sm p-8 space-y-4">
           {estado === 'verificando' && (
             <>
               <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
@@ -58,7 +58,7 @@ export default function PagoConfirmacionPage() {
           )}
           <Link
             to="/dashboard"
-            className="inline-block mt-2 text-sm font-semibold bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors"
+            className="inline-block mt-2 text-sm font-semibold bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-full transition-colors"
           >
             Volver a mi dashboard
           </Link>

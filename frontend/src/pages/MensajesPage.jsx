@@ -188,10 +188,10 @@ export default function MensajesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <NavbarDashboard />
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden grid grid-cols-1 md:grid-cols-[300px_1fr] h-[75vh]">
+        <div className="bg-surface rounded-3xl shadow-sm border border-border overflow-hidden grid grid-cols-1 md:grid-cols-[300px_1fr] h-[75vh]">
           {/* Lista de conversaciones — en móvil se oculta cuando hay un chat abierto */}
           <div className={`border-r border-border flex-col overflow-hidden ${contactoActivo ? 'hidden md:flex' : 'flex'}`}>
             <div className="px-4 py-3 border-b border-border">

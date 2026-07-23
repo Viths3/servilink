@@ -73,7 +73,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? 'Ingresando…' : 'Ingresar'}
               </button>
@@ -108,7 +108,7 @@ function Field({ label, name, type = 'text', value, onChange, placeholder, requi
           onChange={onChange}
           placeholder={placeholder}
           required={required}
-          className="w-full px-4 py-2.5 rounded-lg border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
+          className="w-full px-4 py-2.5 rounded-xl border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
         />
       )}
     </div>
