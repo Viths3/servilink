@@ -2,6 +2,7 @@ const router = require('express').Router();
 const auth = require('../middlewares/auth.middleware');
 const { uploadDocs, uploadFoto, handleUploadError } = require('../middlewares/upload.middleware');
 const { getMe, updateMe, subirDocumentos, getPerfilPublico } = require('../controllers/userController');
+const { getResenasProveedor } = require('../controllers/reviewController');
 
 /**
  * @openapi
@@ -154,5 +155,22 @@ router.post('/upload-docs', auth, uploadDocs, handleUploadError, subirDocumentos
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 router.get('/:id/public', getPerfilPublico);
+
+/**
+ * @openapi
+ * /api/users/{id}/reviews:
+ *   get:
+ *     tags: [Usuarios]
+ *     summary: Ver reseñas y calificación promedio de un proveedor
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Lista de reseñas, total y promedio.
+ */
+router.get('/:id/reviews', getResenasProveedor);
 
 module.exports = router;

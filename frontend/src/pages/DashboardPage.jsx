@@ -8,6 +8,7 @@ import InputCategorias from '../components/InputCategorias';
 import { imgUrl } from '../lib/imageUrl';
 import { CATEGORIAS } from '../lib/categorias';
 import DateTimePicker from '../components/DateTimePicker';
+import Estrellas from '../components/Estrellas';
 
 // ── Constantes ────────────────────────────────────────────────────
 const ESTADO_STYLE = {
@@ -60,40 +61,398 @@ function Vacio({ texto }) {
   );
 }
 
-// ── Bloque WhatsApp ───────────────────────────────────────────────
-function BloqueWhatsApp({ nombre, telefono }) {
-  if (!telefono) return null;
-  const telefonoSinSigno = telefono.replace(/^\+/, '');
-  const waUrl = `https://wa.me/${telefonoSinSigno}`;
+// ── Bloque WhatsApp + mensajería interna ──────────────────────────
+function BloqueWhatsApp({ nombre, telefono, usuarioId }) {
+  if (!telefono && !usuarioId) return null;
+  const telefonoSinSigno = telefono?.replace(/^\+/, '');
+  const waUrl = telefono ? `https://wa.me/${telefonoSinSigno}` : null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-border">
-      <p className="text-xs text-text-muted mb-2">Contacta a {nombre}:</p>
-      <a
-        href={waUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
-      >
-        <img
-          src="https://cdn-icons-png.flaticon.com/128/733/733585.png"
-          className="w-4 h-4"
-          alt="WhatsApp"
-        />
-        Abrir WhatsApp
-      </a>
+    <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center gap-2">
+      <p className="text-xs text-text-muted w-full">Contacta a {nombre}:</p>
+      {waUrl && (
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/128/733/733585.png"
+            className="w-4 h-4"
+            alt="WhatsApp"
+          />
+          Abrir WhatsApp
+        </a>
+      )}
+      {usuarioId && (
+        <Link
+          to={`/mensajes?con=${usuarioId}`}
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded-lg transition-colors"
+        >
+          💬 Mensaje interno
+        </Link>
+      )}
     </div>
   );
 }
 
 
+// ── Modal de pago simulado (pasarela local) ───────────────────────
+function ModalPago({ pago, onCerrar, onPagado }) {
+  const [numeroTarjeta, setNumeroTarjeta]     = useState('');
+  const [nombreTitular, setNombreTitular]     = useState('');
+  const [fechaExpiracion, setFechaExpiracion] = useState('');
+  const [cvv, setCvv]                         = useState('');
+  const [cargando, setCargando]               = useState(false);
+  const [error, setError]                     = useState('');
+
+  const pagar = async () => {
+    setError('');
+    setCargando(true);
+    try {
+      const { data } = await api.post(`/api/payments/${pago._id}/confirm`, {
+        numeroTarjeta, nombreTitular, fechaExpiracion, cvv,
+      });
+      onPagado(data.data);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al procesar el pago.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <h2 className="text-lg font-bold text-text">Pagar servicio</h2>
+        <p className="text-2xl font-bold text-primary">${pago.monto.toFixed(2)}</p>
+        <p className="text-xs text-text-muted -mt-2">Pasarela de pago local ServiLink (simulada)</p>
+
+        <div className="space-y-3">
+          <input
+            type="text"
+            value={numeroTarjeta}
+            onChange={(e) => setNumeroTarjeta(e.target.value)}
+            placeholder="Número de tarjeta (16 dígitos)"
+            maxLength={19}
+            className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+          />
+          <input
+            type="text"
+            value={nombreTitular}
+            onChange={(e) => setNombreTitular(e.target.value)}
+            placeholder="Nombre del titular"
+            className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+          />
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={fechaExpiracion}
+              onChange={(e) => setFechaExpiracion(e.target.value)}
+              placeholder="MM/AA"
+              maxLength={5}
+              className="w-1/2 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+            <input
+              type="text"
+              value={cvv}
+              onChange={(e) => setCvv(e.target.value)}
+              placeholder="CVV"
+              maxLength={4}
+              className="w-1/2 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-1.5">{error}</p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={pagar}
+            disabled={cargando}
+            className="flex-1 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+          >
+            {cargando ? 'Procesando…' : `Pagar $${pago.monto.toFixed(2)}`}
+          </button>
+          <button
+            onClick={onCerrar}
+            className="flex-1 py-2.5 border border-border text-text-muted hover:text-text text-sm font-semibold rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Bloque de pago, vista CLIENTE (dentro de TarjetaEnviada) ──────
+function PagoCliente({ solicitud, onUpdate }) {
+  const [modalPago, setModalPago] = useState(false);
+  const [cargando, setCargando]   = useState(false);
+  const [error, setError]         = useState('');
+
+  if (!solicitud.pago) return null;
+  const { pago } = solicitud;
+
+  const pagar = async () => {
+    setError('');
+    setCargando(true);
+    try {
+      const { data } = await api.post(`/api/payments/${pago._id}/pay`);
+      if (data.modo === 'live') {
+        window.location.href = data.urlPago;
+        return;
+      }
+      setModalPago(true);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al iniciar el pago.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const disputar = async () => {
+    const motivo = window.prompt('Cuéntanos qué problema tuviste con este servicio:');
+    if (!motivo?.trim()) return;
+    try {
+      const { data } = await api.post(`/api/payments/${pago._id}/disputar`, { motivo: motivo.trim() });
+      onUpdate(solicitud._id, { pago: data.data });
+    } catch (err) {
+      alert(err.response?.data?.error ?? 'Error al registrar la disputa.');
+    }
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border space-y-1.5">
+      {modalPago && (
+        <ModalPago
+          pago={pago}
+          onCerrar={() => setModalPago(false)}
+          onPagado={(pagoActualizado) => {
+            setModalPago(false);
+            onUpdate(solicitud._id, { pago: pagoActualizado });
+          }}
+        />
+      )}
+      {(pago.estado === 'pendiente' || pago.estado === 'fallido') && (
+        <>
+          <button
+            onClick={pagar}
+            disabled={cargando}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+              pago.estado === 'fallido' ? 'bg-danger/10 hover:bg-danger/20 text-danger' : 'bg-primary hover:bg-primary-dark text-white'
+            }`}
+          >
+            {cargando ? '…' : pago.estado === 'fallido' ? `⚠ Pago rechazado — reintentar ($${pago.monto.toFixed(2)})` : `💳 Pagar $${pago.monto.toFixed(2)}`}
+          </button>
+          {error && <p className="text-xs text-danger">{error}</p>}
+        </>
+      )}
+      {pago.estado === 'retenido' && (
+        <>
+          <p className="text-xs text-primary font-medium">
+            🔒 Pago retenido (${pago.monto.toFixed(2)}) — se libera al proveedor cuando el servicio se complete.
+          </p>
+          <button onClick={disputar} className="text-xs text-danger underline">Reportar un problema con este servicio</button>
+        </>
+      )}
+      {pago.estado === 'liberado' && (
+        <p className="text-xs text-success font-medium">✓ Servicio completado — pago liberado (${pago.monto.toFixed(2)})</p>
+      )}
+      {pago.estado === 'pagado' && (
+        <p className="text-xs text-success font-medium">✓ Pagado (${pago.monto.toFixed(2)}) · Ref: {pago.referenciaTransferencia || pago.transaccionExternaId}</p>
+      )}
+      {pago.estado === 'en_disputa' && (
+        <p className="text-xs text-danger font-medium">⚠ Disputa en revisión por un administrador</p>
+      )}
+    </div>
+  );
+}
+
+// ── Bloque de pago, vista PROVEEDOR (dentro de TarjetaRecibida) ───
+function PagoProveedor({ solicitud, onUpdate }) {
+  const [modo, setModo]         = useState(false);
+  const [monto, setMonto]       = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [error, setError]       = useState('');
+
+  const puedeCobrar = ['aceptada', 'completada'].includes(solicitud.estado);
+  if (!puedeCobrar) return null;
+
+  if (solicitud.pago) {
+    const { pago } = solicitud;
+    return (
+      <div className="mt-3 pt-3 border-t border-border">
+        {(pago.estado === 'pendiente' || pago.estado === 'fallido') && (
+          <p className="text-xs text-text-muted">💳 Cobro de ${pago.monto.toFixed(2)} pendiente de pago del cliente</p>
+        )}
+        {pago.estado === 'retenido' && (
+          <p className="text-xs text-primary font-medium">🔒 El cliente pagó — retenido hasta marcar el servicio como completado</p>
+        )}
+        {pago.estado === 'liberado' && (
+          <p className="text-xs text-success font-medium">
+            ✓ Liberado — recibirás ${pago.montoProveedor.toFixed(2)} (comisión ServiLink: ${pago.comisionMonto.toFixed(2)})
+          </p>
+        )}
+        {pago.estado === 'pagado' && (
+          <p className="text-xs text-success font-medium">✓ Pagado (${pago.montoProveedor.toFixed(2)}) · Ref: {pago.referenciaTransferencia}</p>
+        )}
+        {pago.estado === 'en_disputa' && (
+          <p className="text-xs text-danger">⚠ El cliente reportó un problema — un administrador lo está revisando</p>
+        )}
+      </div>
+    );
+  }
+
+  const generarCobro = async () => {
+    setError('');
+    const montoNum = Number(monto);
+    if (!montoNum || montoNum <= 0) { setError('Ingresa un monto válido.'); return; }
+    setCargando(true);
+    try {
+      const { data } = await api.post('/api/payments', { solicitudId: solicitud._id, monto: montoNum });
+      onUpdate(solicitud._id, { pago: data.data });
+      setModo(false);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al generar el cobro.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border">
+      {!modo ? (
+        <button
+          onClick={() => setModo(true)}
+          className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg transition-colors"
+        >
+          💳 Solicitar pago
+        </button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={monto}
+              onChange={(e) => setMonto(e.target.value)}
+              placeholder="Monto en $"
+              className="flex-1 px-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+            <button
+              onClick={generarCobro}
+              disabled={cargando}
+              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {cargando ? '…' : 'Enviar'}
+            </button>
+            <button
+              onClick={() => { setModo(false); setError(''); }}
+              className="text-xs font-semibold text-text-muted hover:text-text px-2 py-1.5 rounded-lg border border-border transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+          {error && <p className="text-xs text-danger">{error}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Modal para dejar reseña de una solicitud completada ───────────
+function ModalResena({ solicitud, onCerrar, onEnviada }) {
+  const [puntuacion, setPuntuacion] = useState(0);
+  const [comentario, setComentario] = useState('');
+  const [cargando, setCargando]     = useState(false);
+  const [error, setError]           = useState('');
+
+  const enviar = async () => {
+    setError('');
+    if (!puntuacion) { setError('Selecciona una puntuación.'); return; }
+    setCargando(true);
+    try {
+      await api.post(`/api/service-requests/${solicitud._id}/review`, { puntuacion, comentario: comentario.trim() });
+      onEnviada();
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al enviar la reseña.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <h2 className="text-lg font-bold text-text">Calificar servicio</h2>
+        <p className="text-sm text-text-muted">
+          {solicitud.proveedor?.nombre ?? 'El proveedor'} · {solicitud.anuncio?.titulo ?? solicitud.descripcion}
+        </p>
+
+        <div className="flex justify-center py-2">
+          <Estrellas valor={puntuacion} onChange={setPuntuacion} editable tamano="text-3xl" />
+        </div>
+
+        <textarea
+          value={comentario}
+          onChange={(e) => setComentario(e.target.value)}
+          rows={3}
+          placeholder="Cuéntanos tu experiencia (opcional)…"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+        />
+
+        {error && (
+          <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded px-3 py-1.5">{error}</p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={enviar}
+            disabled={cargando}
+            className="flex-1 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+          >
+            {cargando ? 'Enviando…' : 'Enviar reseña'}
+          </button>
+          <button
+            onClick={onCerrar}
+            className="flex-1 py-2.5 border border-border text-text-muted hover:text-text text-sm font-semibold rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Tarjeta solicitud ENVIADA (vista cliente) ─────────────────────
-function TarjetaEnviada({ solicitud }) {
+function TarjetaEnviada({ solicitud, onUpdate }) {
+  const [modalResena, setModalResena] = useState(false);
   const fecha = fmt(solicitud.fechaPropuesta);
   const mostrarWhatsApp = ['aceptada', 'reagendada'].includes(solicitud.estado);
+  const puedeCalificar = solicitud.estado === 'completada' && !solicitud.calificada;
 
   return (
     <div className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-4">
+      {modalResena && (
+        <ModalResena
+          solicitud={solicitud}
+          onCerrar={() => setModalResena(false)}
+          onEnviada={() => { setModalResena(false); onUpdate(solicitud._id, { calificada: true }); }}
+        />
+      )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-text truncate">
           {solicitud.anuncio?.titulo ?? solicitud.descripcion}
@@ -111,7 +470,20 @@ function TarjetaEnviada({ solicitud }) {
           <BloqueWhatsApp
             nombre={solicitud.proveedor?.nombre}
             telefono={solicitud.proveedor?.telefono}
+            usuarioId={solicitud.proveedor?._id}
           />
+        )}
+        <PagoCliente solicitud={solicitud} onUpdate={onUpdate} />
+        {puedeCalificar && (
+          <button
+            onClick={() => setModalResena(true)}
+            className="mt-2 text-xs font-semibold bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            ★ Dejar reseña
+          </button>
+        )}
+        {solicitud.calificada && (
+          <p className="text-xs text-text-muted mt-2">✓ Ya calificaste este servicio</p>
         )}
       </div>
       <BadgeEstado estado={solicitud.estado} />
@@ -168,7 +540,21 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
 
   const puedeAceptarRechazar = solicitud.estado === 'pendiente';
   const puedeReagendar = ['pendiente', 'aceptada'].includes(solicitud.estado);
+  const puedeCompletar = solicitud.estado === 'aceptada';
   const mostrarWhatsApp = ['aceptada', 'reagendada'].includes(solicitud.estado);
+
+  const completar = async () => {
+    setCargando(true);
+    setErrorAcc('');
+    try {
+      const { data } = await api.patch(`/api/service-requests/${solicitud._id}/complete`);
+      onUpdate(solicitud._id, data.data);
+    } catch (err) {
+      setErrorAcc(err.response?.data?.error ?? 'Error al marcar como completada.');
+    } finally {
+      setCargando(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-border rounded-xl p-4 space-y-3">
@@ -189,8 +575,10 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
             <BloqueWhatsApp
               nombre={solicitud.cliente?.nombre}
               telefono={solicitud.cliente?.telefono}
+              usuarioId={solicitud.cliente?._id}
             />
           )}
+          <PagoProveedor solicitud={solicitud} onUpdate={onUpdate} />
         </div>
         <BadgeEstado estado={solicitud.estado} />
       </div>
@@ -248,6 +636,15 @@ function TarjetaRecibida({ solicitud, onUpdate }) {
                 className="text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg transition-colors"
               >
                 Reagendar
+              </button>
+            )}
+            {puedeCompletar && (
+              <button
+                onClick={completar}
+                disabled={cargando}
+                className="text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {cargando ? '…' : '✓ Marcar como completada'}
               </button>
             )}
           </>
@@ -725,6 +1122,10 @@ function PestanaCliente() {
       .finally(() => setLoading(false));
   }, []);
 
+  const actualizarSolicitud = useCallback((id, nueva) => {
+    setEnviadas((prev) => prev.map((s) => (s._id === id ? { ...s, ...nueva } : s)));
+  }, []);
+
   return (
     <section>
       <h2 className="text-base font-semibold text-white/90 mb-3">Mis solicitudes enviadas</h2>
@@ -734,7 +1135,7 @@ function PestanaCliente() {
         <Vacio texto="No tienes solicitudes enviadas aún." />
       ) : (
         <div className="space-y-3">
-          {enviadas.map((s) => <TarjetaEnviada key={s._id} solicitud={s} />)}
+          {enviadas.map((s) => <TarjetaEnviada key={s._id} solicitud={s} onUpdate={actualizarSolicitud} />)}
         </div>
       )}
     </section>

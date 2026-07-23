@@ -10,7 +10,9 @@ const {
   reagendarSolicitud,
   aceptarReagendamiento,
   rechazarReagendamiento,
+  completarSolicitud,
 } = require('../controllers/serviceRequestController');
+const { crearResena } = require('../controllers/reviewController');
 
 /**
  * @openapi
@@ -332,5 +334,63 @@ router.patch('/:id/accept-reschedule', aceptarReagendamiento);
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 router.patch('/:id/reject-reschedule', rechazarReagendamiento);
+
+/**
+ * @openapi
+ * /api/service-requests/{id}/complete:
+ *   patch:
+ *     tags: [Solicitudes de servicio]
+ *     summary: Marcar solicitud como completada
+ *     description: Solo el proveedor dueño de la solicitud. Estado debe ser `aceptada`.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Solicitud marcada como completada.
+ *       403:
+ *         description: No es el proveedor de esta solicitud.
+ *       409:
+ *         description: La solicitud no está en estado aceptada.
+ */
+router.patch('/:id/complete', role('proveedor'), completarSolicitud);
+
+/**
+ * @openapi
+ * /api/service-requests/{id}/review:
+ *   post:
+ *     tags: [Solicitudes de servicio]
+ *     summary: Calificar y reseñar una solicitud completada
+ *     description: Solo el cliente de la solicitud, y solo una vez que el estado es `completada`.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [puntuacion]
+ *             properties:
+ *               puntuacion: { type: integer, minimum: 1, maximum: 5 }
+ *               comentario: { type: string }
+ *     responses:
+ *       201:
+ *         description: Reseña publicada.
+ *       403:
+ *         description: No es el cliente de esta solicitud.
+ *       409:
+ *         description: Solicitud no completada o ya calificada.
+ */
+router.post('/:id/review', crearResena);
 
 module.exports = router;

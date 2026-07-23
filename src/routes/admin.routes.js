@@ -12,6 +12,9 @@ const {
   getAnunciosReportados,
   gestionarAnuncioReportado,
   eliminarFotoPerfilUsuario,
+  getPagos,
+  marcarPagadoProveedor,
+  resolverDisputaPago,
 } = require('../controllers/adminController');
 
 /**
@@ -429,5 +432,83 @@ router.patch('/users/:id', toggleUsuario);
  *         description: Foto de perfil eliminada.
  */
 router.patch('/users/:id/remove-photo', eliminarFotoPerfilUsuario);
+
+/**
+ * @openapi
+ * /api/admin/payments:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Listar pagos (opcionalmente filtrados por estado)
+ *     description: >
+ *       Antes de listar, libera automáticamente los pagos retenidos cuya
+ *       ventana de disputa ya venció.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: estado
+ *         schema: { type: string, enum: [pendiente, retenido, liberado, pagado, en_disputa, fallido] }
+ *     responses:
+ *       200:
+ *         description: Lista de pagos.
+ */
+router.get('/payments', getPagos);
+
+/**
+ * @openapi
+ * /api/admin/payments/{id}/pay-out:
+ *   patch:
+ *     tags: [Admin]
+ *     summary: Confirmar liquidación manual al proveedor
+ *     description: Solo aplica a pagos en estado `liberado`.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [referenciaTransferencia]
+ *             properties:
+ *               referenciaTransferencia: { type: string }
+ *     responses:
+ *       200:
+ *         description: Pago liquidado al proveedor.
+ */
+router.patch('/payments/:id/pay-out', marcarPagadoProveedor);
+
+/**
+ * @openapi
+ * /api/admin/payments/{id}/resolve-dispute:
+ *   patch:
+ *     tags: [Admin]
+ *     summary: Resolver una disputa de pago
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [resolucion]
+ *             properties:
+ *               resolucion: { type: string, enum: [liberar, reembolsar] }
+ *     responses:
+ *       200:
+ *         description: Disputa resuelta.
+ */
+router.patch('/payments/:id/resolve-dispute', resolverDisputaPago);
 
 module.exports = router;

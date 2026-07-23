@@ -1,6 +1,7 @@
 const User           = require('../models/User');
 const Announcement   = require('../models/Announcement');
 const ServiceRequest = require('../models/ServiceRequest');
+const Review         = require('../models/Review');
 
 // ── RF-05 helper: GET /api/users/me ──────────────────────────────
 const getMe = async (req, res) => {
@@ -97,14 +98,20 @@ const getPerfilPublico = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const [anuncios, solicitudesCompletadas] = await Promise.all([
+    const [anuncios, solicitudesCompletadas, resenas] = await Promise.all([
       Announcement.find({ proveedor: req.params.id, estado: 'activo' })
         .select('titulo descripcion categoria precioRef imagenUrl imagenes createdAt')
         .lean(),
       ServiceRequest.countDocuments({ proveedor: req.params.id, estado: 'completada' }),
+      Review.find({ proveedor: req.params.id }).select('puntuacion').lean(),
     ]);
 
-    res.json({ data: { ...usuario.toJSON(), anuncios, solicitudesCompletadas } });
+    const totalResenas    = resenas.length;
+    const ratingPromedio   = totalResenas > 0
+      ? Math.round((resenas.reduce((sum, r) => sum + r.puntuacion, 0) / totalResenas) * 10) / 10
+      : 0;
+
+    res.json({ data: { ...usuario.toJSON(), anuncios, solicitudesCompletadas, ratingPromedio, totalResenas } });
   } catch (err) {
     console.error('getPerfilPublico:', err);
     res.status(500).json({ error: 'Error interno del servidor' });

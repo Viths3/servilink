@@ -1,6 +1,9 @@
 const ServiceRequest = require('../models/ServiceRequest');
 const User = require('../models/User');
 const Announcement = require('../models/Announcement');
+const Payment = require('../models/Payment');
+const Review = require('../models/Review');
+const { programarLiberacion } = require('./paymentController');
 const {
   notificarNuevaSolicitud,
   notificarCitaConfirmada,
@@ -89,6 +92,24 @@ const enviarSolicitud = async (req, res) => {
   }
 };
 
+// Adjunta a cada solicitud el pago asociado (si existe) y si ya fue calificada.
+const adjuntarPagoYResena = async (solicitudes) => {
+  const ids = solicitudes.map((s) => s._id);
+  const [pagos, resenas] = await Promise.all([
+    Payment.find({ solicitud: { $in: ids } }).lean(),
+    Review.find({ solicitud: { $in: ids } }).select('solicitud').lean(),
+  ]);
+  const pagoPorSolicitud   = new Map(pagos.map((p) => [p.solicitud.toString(), p]));
+  const resenaPorSolicitud = new Set(resenas.map((r) => r.solicitud.toString()));
+
+  return solicitudes.map((s) => {
+    const obj = s.toObject();
+    obj.pago      = pagoPorSolicitud.get(s._id.toString()) ?? null;
+    obj.calificada = resenaPorSolicitud.has(s._id.toString());
+    return obj;
+  });
+};
+
 // ── GET /api/service-requests/sent (auth) ────────────────────────
 const getSolicitudesEnviadas = async (req, res) => {
   try {
@@ -97,7 +118,8 @@ const getSolicitudesEnviadas = async (req, res) => {
       .populate('anuncio', 'titulo categoria')
       .sort({ createdAt: -1 });
 
-    res.json({ data: solicitudes, total: solicitudes.length });
+    const data = await adjuntarPagoYResena(solicitudes);
+    res.json({ data, total: data.length });
   } catch (err) {
     console.error('getSolicitudesEnviadas:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -112,7 +134,8 @@ const getSolicitudesRecibidas = async (req, res) => {
       .populate('anuncio', 'titulo categoria')
       .sort({ createdAt: -1 });
 
-    res.json({ data: solicitudes, total: solicitudes.length });
+    const data = await adjuntarPagoYResena(solicitudes);
+    res.json({ data, total: data.length });
   } catch (err) {
     console.error('getSolicitudesRecibidas:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -317,6 +340,34 @@ const rechazarReagendamiento = async (req, res) => {
   }
 };
 
+// ── PATCH /api/service-requests/:id/complete (proveedor) ─────────
+// El proveedor marca el servicio como completado una vez realizado.
+const completarSolicitud = async (req, res) => {
+  try {
+    const solicitud = await ServiceRequest.findById(req.params.id);
+
+    if (!solicitud) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    if (!verificarProveedor(solicitud, req.usuario._id)) {
+      return res.status(403).json({ error: 'No tienes permiso para gestionar esta solicitud' });
+    }
+    if (solicitud.estado !== 'aceptada') {
+      return res.status(409).json({ error: `La solicitud está en estado '${solicitud.estado}', no se puede marcar como completada` });
+    }
+
+    solicitud.estado = 'completada';
+    await solicitud.save();
+
+    // Si hay un pago retenido para esta solicitud, programa su liberación
+    // tras la ventana de disputa (ver paymentController.programarLiberacion).
+    await programarLiberacion(solicitud._id);
+
+    res.json({ mensaje: 'Solicitud marcada como completada', data: solicitud });
+  } catch (err) {
+    console.error('completarSolicitud:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   enviarSolicitud,
   getSolicitudesEnviadas,
@@ -326,4 +377,5 @@ module.exports = {
   reagendarSolicitud,
   aceptarReagendamiento,
   rechazarReagendamiento,
+  completarSolicitud,
 };

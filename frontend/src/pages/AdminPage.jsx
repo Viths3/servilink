@@ -6,7 +6,7 @@ import api from '../lib/axios';
 import { imgUrl } from '../lib/imageUrl';
 import NavbarDashboard from '../components/NavbarDashboard';
 
-const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados'];
+const TABS = ['Estadísticas', 'Verificaciones', 'Usuarios', 'Anuncios reportados', 'Pagos'];
 
 const CATEGORIAS = {
   electricidad: 'Electricidad', plomeria: 'Plomería',
@@ -1192,6 +1192,177 @@ function TabReportados() {
   );
 }
 
+// ── Tarjeta de pago (admin) ────────────────────────────────────────
+function TarjetaPagoAdmin({ pago, onActualizado }) {
+  const [modo, setModo]         = useState(null); // null | 'pagar' | 'disputa'
+  const [valor, setValor]       = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [error, setError]       = useState('');
+
+  const liquidar = async () => {
+    if (!valor.trim()) { setError('La referencia de la transferencia es requerida.'); return; }
+    setError('');
+    setCargando(true);
+    try {
+      const { data } = await api.patch(`/api/admin/payments/${pago._id}/pay-out`, { referenciaTransferencia: valor.trim() });
+      onActualizado(pago._id, data.data);
+      setModo(null);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al liquidar el pago.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const resolver = async (resolucion) => {
+    setError('');
+    setCargando(true);
+    try {
+      const { data } = await api.patch(`/api/admin/payments/${pago._id}/resolve-dispute`, { resolucion });
+      onActualizado(pago._id, data.data);
+    } catch (err) {
+      setError(err.response?.data?.error ?? 'Error al resolver la disputa.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-border rounded-xl p-4 space-y-2">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-text">{pago.solicitud?.descripcion ?? 'Servicio'}</p>
+          <p className="text-xs text-text-muted mt-0.5">
+            Cliente: {pago.cliente?.nombre ?? '—'} · Proveedor: {pago.proveedor?.nombre ?? '—'}
+          </p>
+          <p className="text-xs text-text-muted mt-1">
+            Total: <span className="font-medium text-text">${pago.monto.toFixed(2)}</span>
+            {' · '}Comisión: <span className="font-medium text-text">${pago.comisionMonto.toFixed(2)}</span>
+            {' · '}A pagar al proveedor: <span className="font-semibold text-primary">${pago.montoProveedor.toFixed(2)}</span>
+          </p>
+          {pago.disputa?.motivo && (
+            <p className="text-xs text-danger mt-1">Motivo de disputa: {pago.disputa.motivo}</p>
+          )}
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${
+          pago.estado === 'en_disputa' ? 'bg-danger/10 text-danger' : 'bg-primary/10 text-primary'
+        }`}>
+          {pago.estado.replace('_', ' ')}
+        </span>
+      </div>
+
+      {error && <ErrorMsg texto={error} />}
+
+      {pago.estado === 'liberado' && (
+        modo !== 'pagar' ? (
+          <button
+            onClick={() => setModo('pagar')}
+            className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Marcar como pagado al proveedor
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="Referencia de la transferencia bancaria"
+              className="flex-1 px-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-text placeholder-text-muted"
+            />
+            <button
+              onClick={liquidar}
+              disabled={cargando}
+              className="text-xs font-semibold bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {cargando ? '…' : 'Confirmar'}
+            </button>
+            <button
+              onClick={() => { setModo(null); setError(''); }}
+              className="text-xs font-semibold text-text-muted hover:text-text px-2 py-1.5 rounded-lg border border-border transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        )
+      )}
+
+      {pago.estado === 'en_disputa' && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => resolver('liberar')}
+            disabled={cargando}
+            className="text-xs font-semibold bg-success/10 hover:bg-success/20 text-success px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            El servicio sí se cumplió — liberar al proveedor
+          </button>
+          <button
+            onClick={() => resolver('reembolsar')}
+            disabled={cargando}
+            className="text-xs font-semibold bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            Reembolsar al cliente
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tab: Pagos (liquidación y disputas) ───────────────────────────
+function TabPagos() {
+  const [filtro, setFiltro]   = useState('liberado');
+  const [lista, setLista]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    api.get('/api/admin/payments', { params: { estado: filtro } })
+      .then(({ data }) => setLista(data.data))
+      .catch(() => setError('No se pudieron cargar los pagos.'))
+      .finally(() => setLoading(false));
+  }, [filtro]);
+
+  const actualizar = useCallback((id, nuevo) => {
+    setLista((prev) => prev.filter((p) => p._id !== id).concat(nuevo.estado === filtro ? [nuevo] : []));
+  }, [filtro]);
+
+  const FILTROS = [
+    { value: 'liberado',   label: 'Listos para liquidar' },
+    { value: 'en_disputa', label: 'Disputas' },
+    { value: 'retenido',   label: 'Retenidos' },
+    { value: 'pagado',     label: 'Pagados' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {FILTROS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setFiltro(f.value)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+              filtro === f.value ? 'bg-white text-primary' : 'bg-white/10 text-white/70 hover:text-white'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? <Skeleton /> : error ? <ErrorMsg texto={error} /> : lista.length === 0 ? (
+        <Vacio texto="No hay pagos en este estado." />
+      ) : (
+        <div className="space-y-3">
+          {lista.map((p) => <TarjetaPagoAdmin key={p._id} pago={p} onActualizado={actualizar} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Página principal ──────────────────────────────────────────────
 export default function AdminPage() {
   const { usuario } = useAuth();
@@ -1234,6 +1405,7 @@ export default function AdminPage() {
         {tabActiva === 1 && <TabVerificaciones />}
         {tabActiva === 2 && <TabUsuarios />}
         {tabActiva === 3 && <TabReportados />}
+        {tabActiva === 4 && <TabPagos />}
       </div>
     </div>
   );

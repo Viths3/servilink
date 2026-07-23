@@ -37,8 +37,9 @@ function IconChevronDown() {
 // onChange: (isoString) => void
 // min: ISO string or datetime-local string — fecha mínima seleccionable
 export default function DateTimePicker({ value, onChange, min }) {
-  const [open, setOpen]       = useState(false);
-  const containerRef          = useRef(null);
+  const [open, setOpen]           = useState(false);
+  const [placement, setPlacement] = useState('bottom'); // 'bottom' | 'top'
+  const containerRef              = useRef(null);
 
   const minDate = min ? new Date(min) : new Date();
 
@@ -66,6 +67,19 @@ export default function DateTimePicker({ value, onChange, min }) {
     setTempDay(value ? base.getDate() : null);
     setTempHour(value ? base.getHours() : 9);
     setTempMin(value ? Math.floor(base.getMinutes() / 5) * 5 : 0);
+
+    // Decide si abrir hacia abajo o hacia arriba según el espacio disponible en pantalla,
+    // para que no quede flotando lejos del campo dentro de un modal.
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      const ALTURA_ESTIMADA = 420;
+      const espacioAbajo = window.innerHeight - rect.bottom;
+      const espacioArriba = rect.top;
+      setPlacement(
+        espacioAbajo >= ALTURA_ESTIMADA || espacioAbajo >= espacioArriba ? 'bottom' : 'top'
+      );
+    }
+
     setOpen(true);
   };
 
@@ -118,7 +132,11 @@ export default function DateTimePicker({ value, onChange, min }) {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute bottom-full mb-1 right-0 z-[9999] bg-white rounded-xl shadow-xl border border-border p-4 space-y-3 w-72">
+        <div
+          className={`absolute right-0 z-9999 bg-white rounded-xl shadow-xl border border-border p-4 space-y-3 w-72 max-h-[80vh] overflow-y-auto ${
+            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}
+        >
 
           {/* Navegación de mes */}
           <div className="flex items-center justify-between">

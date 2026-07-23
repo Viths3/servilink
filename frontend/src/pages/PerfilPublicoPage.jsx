@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import api from '../lib/axios';
 import Navbar from '../components/Navbar';
 import { imgUrl } from '../lib/imageUrl';
+import Estrellas from '../components/Estrellas';
 
 const ICONOS_CATEGORIA = {
   electricidad: 'https://cdn-icons-png.flaticon.com/128/3103/3103594.png',
@@ -75,11 +76,37 @@ function TarjetaAnuncio({ anuncio }) {
   );
 }
 
+function TarjetaResena({ resena }) {
+  const inicial = (resena.cliente?.nombre?.[0] ?? '?').toUpperCase();
+  const fecha = new Date(resena.createdAt).toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  return (
+    <div className="bg-surface border border-border rounded-xl p-4">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0 overflow-hidden">
+          {resena.cliente?.fotoPerfil
+            ? <img src={imgUrl(resena.cliente.fotoPerfil)} alt={resena.cliente.nombre} className="w-full h-full object-cover" />
+            : inicial}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-text truncate">{resena.cliente?.nombre ?? 'Cliente'}</p>
+          <Estrellas valor={resena.puntuacion} tamano="text-xs" />
+        </div>
+        <span className="text-xs text-text-muted shrink-0">{fecha}</span>
+      </div>
+      {resena.comentario && (
+        <p className="text-sm text-text-muted mt-2 leading-relaxed">{resena.comentario}</p>
+      )}
+    </div>
+  );
+}
+
 export default function PerfilPublicoPage() {
   const { id } = useParams();
   const [perfil, setPerfil]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [resenas, setResenas] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +116,11 @@ export default function PerfilPublicoPage() {
       .then(({ data }) => { if (!cancelled) setPerfil(data.data); })
       .catch(() => { if (!cancelled) setError('No se pudo cargar el perfil.'); })
       .finally(() => { if (!cancelled) setLoading(false); });
+
+    api.get(`/api/users/${id}/reviews`)
+      .then(({ data }) => { if (!cancelled) setResenas(data.data); })
+      .catch(() => { if (!cancelled) setResenas([]); });
+
     return () => { cancelled = true; };
   }, [id]);
 
@@ -145,6 +177,15 @@ export default function PerfilPublicoPage() {
                     <p className="text-sm text-text-muted">{categoria}</p>
                   )}
 
+                  {perfil.totalResenas > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Estrellas valor={perfil.ratingPromedio} tamano="text-sm" />
+                      <span className="text-xs text-text-muted">
+                        {perfil.ratingPromedio} ({perfil.totalResenas} {perfil.totalResenas === 1 ? 'reseña' : 'reseñas'})
+                      </span>
+                    </div>
+                  )}
+
                   {perfil.solicitudesCompletadas > 0 && (
                     <p className="text-xs text-text-muted">
                       <span className="font-semibold text-text">{perfil.solicitudesCompletadas}</span>{' '}
@@ -187,6 +228,28 @@ export default function PerfilPublicoPage() {
                       {perfil.anuncios.map((a) => (
                         <TarjetaAnuncio key={a._id} anuncio={a} />
                       ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* ── Reseñas ── */}
+              {esProv && (
+                <section>
+                  <h2 className="text-base font-semibold text-text mb-4">
+                    Reseñas
+                    {resenas.length > 0 && (
+                      <span className="ml-2 text-xs font-medium text-text-muted">({resenas.length})</span>
+                    )}
+                  </h2>
+
+                  {resenas.length === 0 ? (
+                    <div className="bg-surface border border-border rounded-xl px-5 py-10 text-center">
+                      <p className="text-sm text-text-muted">Este proveedor aún no tiene reseñas.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {resenas.map((r) => <TarjetaResena key={r._id} resena={r} />)}
                     </div>
                   )}
                 </section>

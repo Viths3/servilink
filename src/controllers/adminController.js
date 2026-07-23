@@ -2,6 +2,8 @@ const User = require('../models/User');
 const UpgradeRequest = require('../models/UpgradeRequest');
 const Announcement = require('../models/Announcement');
 const ServiceRequest = require('../models/ServiceRequest');
+const Payment = require('../models/Payment');
+const { liberarPagosVencidos } = require('./paymentController');
 const {
   notificarVerificacionAprobada,
   notificarVerificacionRechazada,
@@ -417,6 +419,86 @@ const eliminarFotoPerfilUsuario = async (req, res) => {
   }
 };
 
+// ── GET /api/admin/payments ────────────────────────────────────────
+// Lista pagos filtrando por estado (ej. 'liberado' = listos para liquidar
+// al proveedor, 'en_disputa' = pendientes de resolución).
+const getPagos = async (req, res) => {
+  try {
+    await liberarPagosVencidos();
+
+    const { estado } = req.query;
+    const filtro = estado ? { estado } : {};
+
+    const pagos = await Payment.find(filtro)
+      .populate('cliente', 'nombre email')
+      .populate('proveedor', 'nombre email')
+      .populate('solicitud', 'descripcion estado')
+      .sort({ createdAt: -1 });
+
+    res.json({ data: pagos, total: pagos.length });
+  } catch (err) {
+    console.error('getPagos:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// ── PATCH /api/admin/payments/:id/pay-out ─────────────────────────
+// El admin confirma que ya transfirió manualmente al proveedor el monto
+// que le corresponde (monto - comisión), tras verificar el estado del pago.
+const marcarPagadoProveedor = async (req, res) => {
+  try {
+    const { referenciaTransferencia } = req.body;
+    if (!referenciaTransferencia?.trim()) {
+      return res.status(400).json({ error: 'La referencia de la transferencia es requerida' });
+    }
+
+    const pago = await Payment.findById(req.params.id);
+    if (!pago) return res.status(404).json({ error: 'Pago no encontrado' });
+    if (pago.estado !== 'liberado') {
+      return res.status(409).json({ error: 'Solo se pueden liquidar pagos en estado "liberado"' });
+    }
+
+    pago.estado = 'pagado';
+    pago.referenciaTransferencia = referenciaTransferencia.trim();
+    pago.fechaPagadoProveedor = new Date();
+    await pago.save();
+
+    res.json({ mensaje: 'Pago liquidado al proveedor', data: pago });
+  } catch (err) {
+    console.error('marcarPagadoProveedor:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// ── PATCH /api/admin/payments/:id/resolve-dispute ─────────────────
+// resolucion: 'liberar' (el servicio sí se cumplió, se libera al proveedor)
+//           | 'reembolsar' (se reembolsa al cliente fuera de la plataforma)
+const resolverDisputaPago = async (req, res) => {
+  try {
+    const { resolucion } = req.body;
+    if (!['liberar', 'reembolsar'].includes(resolucion)) {
+      return res.status(400).json({ error: 'La resolución debe ser "liberar" o "reembolsar"' });
+    }
+
+    const pago = await Payment.findById(req.params.id);
+    if (!pago) return res.status(404).json({ error: 'Pago no encontrado' });
+    if (pago.estado !== 'en_disputa') {
+      return res.status(409).json({ error: 'Este pago no tiene una disputa abierta' });
+    }
+
+    pago.disputa.resuelta = true;
+    pago.disputa.resolucion = resolucion;
+    pago.estado = resolucion === 'liberar' ? 'liberado' : 'fallido';
+    if (resolucion === 'liberar') pago.fechaLiberacion = new Date();
+    await pago.save();
+
+    res.json({ mensaje: 'Disputa resuelta', data: pago });
+  } catch (err) {
+    console.error('resolverDisputaPago:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   getVerificaciones,
   procesarVerificacion,
@@ -428,4 +510,7 @@ module.exports = {
   getAnunciosReportados,
   gestionarAnuncioReportado,
   eliminarFotoPerfilUsuario,
+  getPagos,
+  marcarPagadoProveedor,
+  resolverDisputaPago,
 };

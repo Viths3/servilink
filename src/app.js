@@ -32,6 +32,10 @@ app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
 app.use('/api/service-requests', require('./routes/serviceRequest.routes'));
 
+// Sprint 4: Mensajería interna, Pagos
+app.use('/api/messages', require('./routes/message.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
+
 // ── RUTA HEALTH CHECK ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ mensaje: 'ServiLink API v1.0', estado: 'activo' });

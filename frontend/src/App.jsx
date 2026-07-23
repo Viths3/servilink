@@ -7,6 +7,8 @@ import RegistroClientePage from './pages/RegistroClientePage';
 import RegistroProveedorPage from './pages/RegistroProveedorPage';
 import DetalleAnuncioPage from './pages/DetalleAnuncioPage';
 import DashboardPage from './pages/DashboardPage';
+import MensajesPage from './pages/MensajesPage';
+import PagoConfirmacionPage from './pages/PagoConfirmacionPage';
 import AdminPage from './pages/AdminPage';
 import ComoFuncionaPage from './pages/ComoFuncionaPage';
 import PerfilPublicoPage from './pages/PerfilPublicoPage';
@@ -28,6 +30,8 @@ export default function App() {
           {/* Rutas privadas — requieren sesión activa */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/mensajes"  element={<MensajesPage />} />
+            <Route path="/pagos/confirmacion/:pagoId" element={<PagoConfirmacionPage />} />
             <Route path="/admin"     element={<AdminPage />} />
           </Route>
         </Routes>
