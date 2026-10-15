@@ -1,3 +1,4 @@
+import Imagen from './Imagen';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -274,7 +275,7 @@ export default function Navbar() {
                 </svg>
                 <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
                   {usuario.fotoPerfil && usuario.fotoPerfil !== 'REMOVED_BY_MODERATOR'
-                    ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
+                    ? <Imagen tipo="avatar" src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                     : usuario.nombre?.[0]?.toUpperCase() ?? '?'}
                 </div>
               </button>

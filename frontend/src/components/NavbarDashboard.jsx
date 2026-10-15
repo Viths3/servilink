@@ -1,3 +1,4 @@
+import Imagen from './Imagen';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -63,7 +64,7 @@ export default function NavbarDashboard({ badge }) {
             >
               <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shrink-0">
                 {usuario?.fotoPerfil && usuario.fotoPerfil !== 'REMOVED_BY_MODERATOR'
-                  ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
+                  ? <Imagen tipo="avatar" src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                   : usuario?.nombre?.[0]?.toUpperCase() ?? '?'}
               </div>
               <span className="hidden sm:block text-sm text-text font-medium max-w-35 truncate">

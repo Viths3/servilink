@@ -1,0 +1,98 @@
+[
+  {
+    "categoria": "electricidad",
+    "nombreProveedor": "Carlos Vera",
+    "descripcionProveedor": "Electricista certificado con 8 años de experiencia en instalaciones residenciales e industriales.",
+    "titulo": "Instalaciones y Reparaciones Eléctricas Residenciales",
+    "descripcion": "Servicio profesional de electricidad para hogares y negocios en Cuenca.\n\nEspecificaciones del servicio:\n• Instalación y reactualización de tableros eléctricos\n• Cableado nuevo y reparación de cortocircuitos\n• Instalación de luminarias, tomacorrientes y breakers\n• Certificado de revisión de seguridad al finalizar\n• Visita técnica y diagnóstico incluidos\n• Garantía de 6 meses en mano de obra\n\nAtención de emergencias disponible. Materiales facturados por separado.",
+    "precioRef": 25
+  },
+  {
+    "categoria": "plomeria",
+    "nombreProveedor": "Jorge Mendoza",
+    "descripcionProveedor": "Gasfitero profesional especializado en detección y reparación de fugas de agua.",
+    "titulo": "Plomería y Destape de Tuberías a Domicilio",
+    "descripcion": "Soluciones rápidas y garantizadas para problemas de agua potable y desagües.\n\nEspecificaciones del servicio:\n• Reparación de fugas en tuberías y llaves\n• Destape de desagües, lavaplatos e inodoros\n• Instalación de grifería, calefones y tanques\n• Cambio de tuberías de cobre y PVC\n• Visita de diagnóstico sin costo dentro de Cuenca\n• Garantía de 3 meses en trabajos realizados\n\nAtención el mismo día para emergencias.",
+    "precioRef": 20
+  },
+  {
+    "categoria": "medicina",
+    "nombreProveedor": "Lic. Andrea Salazar",
+    "descripcionProveedor": "Enfermera con licencia, especializada en cuidado domiciliario de adultos mayores.",
+    "titulo": "Atención de Enfermería y Cuidado a Domicilio",
+    "descripcion": "Personal de salud capacitado para el cuidado de pacientes y adultos mayores en casa.\n\nEspecificaciones del servicio:\n• Control de signos vitales y glucosa\n• Aplicación de inyecciones y curaciones\n• Apoyo en higiene, movilidad y alimentación\n• Administración y control de medicamentos\n• Reportes de seguimiento para la familia\n• Personal con licencia y experiencia comprobada\n\nDisponibilidad por horas, turnos o de forma permanente.",
+    "precioRef": 15
+  },
+  {
+    "categoria": "carpinteria",
+    "nombreProveedor": "Luis Fernández",
+    "descripcionProveedor": "Carpintero con taller propio, especializado en muebles de melamina y madera a medida.",
+    "titulo": "Carpintería y Muebles a Medida",
+    "descripcion": "Diseño y fabricación de muebles a medida para el hogar y la oficina.\n\nEspecificaciones del servicio:\n• Closets, cocinas y muebles modulares en melamina\n• Muebles en madera maciza bajo diseño personalizado\n• Reparación de puertas, marcos y cerraduras\n• Toma de medidas y presupuesto sin costo\n• Instalación incluida en el precio final\n• Garantía de 1 año en herrajes y estructura\n\nTiempo de entrega estimado: 7 a 15 días según el proyecto.",
+    "precioRef": 45
+  },
+  {
+    "categoria": "asesoria",
+    "nombreProveedor": "Ing. Paola Ramírez",
+    "descripcionProveedor": "Contadora e ingeniera comercial, asesora a pequeñas y medianas empresas hace 6 años.",
+    "titulo": "Asesoría Contable y Tributaria para Pymes",
+    "descripcion": "Acompañamiento contable y tributario para emprendedores y pequeñas empresas.\n\nEspecificaciones del servicio:\n• Declaraciones mensuales y anuales ante el SRI\n• Contabilidad general y estados financieros\n• Constitución y cierre de empresas\n• Elaboración de roles de pago y nómina\n• Asesoría en facturación electrónica\n• Reuniones virtuales o presenciales según convenga\n\nPlanes mensuales o por proyecto puntual.",
+    "precioRef": 50
+  },
+  {
+    "categoria": "jardineria",
+    "nombreProveedor": "Manuel Ortega",
+    "descripcionProveedor": "Jardinero profesional con experiencia en diseño y mantenimiento de áreas verdes.",
+    "titulo": "Mantenimiento de Jardines y Áreas Verdes",
+    "descripcion": "Cuidado integral de jardines residenciales y comerciales.\n\nEspecificaciones del servicio:\n• Corte y perfilado de césped\n• Poda de árboles, setos y arbustos\n• Diseño y siembra de nuevas áreas verdes\n• Fumigación y control de plagas\n• Retiro de desechos vegetales incluido\n• Planes de mantenimiento mensual con descuento\n\nHerramientas y equipo propio, no requiere que el cliente los facilite.",
+    "precioRef": 18
+  },
+  {
+    "categoria": "limpieza",
+    "nombreProveedor": "Norma Chuquimarca",
+    "descripcionProveedor": "Empresa familiar de limpieza con personal capacitado y productos profesionales.",
+    "titulo": "Limpieza Profunda de Hogares y Oficinas",
+    "descripcion": "Servicio de limpieza confiable para el hogar o la oficina.\n\nEspecificaciones del servicio:\n• Limpieza de pisos, vidrios y superficies\n• Desinfección de baños y cocina\n• Limpieza de tapizados y muebles\n• Organización de espacios\n• Productos y equipo de limpieza incluidos\n• Personal verificado y con referencias\n\nServicios puntuales o contratos de limpieza recurrente.",
+    "precioRef": 22
+  },
+  {
+    "categoria": "pintura",
+    "nombreProveedor": "Diego Palacios",
+    "descripcionProveedor": "Pintor profesional especializado en interiores, exteriores y fachadas.",
+    "titulo": "Pintura de Interiores y Exteriores",
+    "descripcion": "Trabajos de pintura con acabado profesional y garantía.\n\nEspecificaciones del servicio:\n• Empastado y resane de paredes y cielo raso\n• Pintura satinada, mate o texturizada\n• Pintura de fachadas y exteriores\n• Protección de muebles y pisos durante el trabajo\n• Presupuesto gratuito según metros cuadrados\n• Garantía de acabado de 6 meses\n\nPrecio referencial por metro cuadrado, incluye mano de obra.",
+    "precioRef": 8
+  },
+  {
+    "categoria": "mecanica",
+    "nombreProveedor": "Fabián Cárdenas",
+    "descripcionProveedor": "Mecánico automotriz con taller móvil, atiende a domicilio en toda la ciudad.",
+    "titulo": "Mecánica Automotriz a Domicilio",
+    "descripcion": "Mantenimiento y reparación de vehículos sin salir de casa u oficina.\n\nEspecificaciones del servicio:\n• Cambio de aceite y filtros\n• Diagnóstico computarizado de fallas\n• Revisión y cambio de frenos\n• Mantenimiento de suspensión y dirección\n• Uso de repuestos originales o alternativos según preferencia\n• Factura y garantía por escrito\n\nServicio a domicilio dentro de Cuenca sin costo adicional.",
+    "precioRef": 30
+  },
+  {
+    "categoria": "diseno",
+    "nombreProveedor": "Camila Idrovo",
+    "descripcionProveedor": "Diseñadora gráfica freelance, especializada en identidad de marca para emprendimientos.",
+    "titulo": "Diseño Gráfico y Branding para Emprendimientos",
+    "descripcion": "Diseño de marca profesional para negocios y emprendimientos.\n\nEspecificaciones del servicio:\n• Diseño de logotipo con 3 propuestas iniciales\n• Manual básico de marca (colores y tipografía)\n• Artes para redes sociales\n• Diseño de tarjetas de presentación y empaques\n• Entrega de archivos editables (AI, PNG, PDF)\n• Tiempo de entrega: 5 días hábiles\n\nIncluye una ronda de correcciones sin costo adicional.",
+    "precioRef": 40
+  },
+  {
+    "categoria": "fotografia",
+    "nombreProveedor": "Santiago Bravo",
+    "descripcionProveedor": "Fotógrafo profesional con más de 5 años cubriendo eventos y sesiones de retrato.",
+    "titulo": "Fotografía Profesional de Eventos y Retratos",
+    "descripcion": "Cobertura fotográfica profesional para todo tipo de ocasiones.\n\nEspecificaciones del servicio:\n• Sesiones de bodas, grados y cumpleaños\n• Books fotográficos personales y familiares\n• Fotografía de productos para negocios\n• Edición y retoque profesional incluidos\n• Entrega digital en alta resolución\n• Equipo profesional propio (cámara, luces, lentes)\n\nPaquetes disponibles según duración y número de fotos entregadas.",
+    "precioRef": 60
+  },
+  {
+    "categoria": "otro",
+    "nombreProveedor": "Byron Pacheco",
+    "descripcionProveedor": "Técnico multiservicios para reparaciones y trabajos generales del hogar.",
+    "titulo": "Servicios Generales y Mantenimiento del Hogar",
+    "descripcion": "Solución práctica para esos trabajos varios que requiere tu hogar u oficina.\n\nEspecificaciones del servicio:\n• Montaje y armado de muebles\n• Instalación de cortinas, espejos y cuadros\n• Pequeñas reparaciones generales\n• Apoyo en mudanzas pequeñas\n• Mano de obra confiable y puntual\n• Cotización previa sin compromiso\n\nCobro por hora de trabajo, con mínimo de una hora.",
+    "precioRef": 15
+  }
+]

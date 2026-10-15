@@ -140,6 +140,40 @@ Los documentos de la Fase 1 están en la carpeta `/docs`:
 
 ---
 
+## Almacenamiento de imágenes y datos demo
+
+En Railway, conecta un volumen al servicio `servilink` y configura su ruta
+de montaje como `/app/uploads`. El volumen de MongoDB solo conserva la base;
+los archivos subidos necesitan su propio almacenamiento persistente.
+
+Las fotos demo de los anuncios están incluidas en `frontend/public/referencias`
+y se sirven desde `/referencias`. Sus fuentes están en `fuentes.json`.
+Los perfiles demo usan avatares neutros y las imágenes de anuncios se identifican
+como referencias. Las fotos subidas que ya no existen reciben 404 y muestran
+un reemplazo visual en el frontend; los respaldos de evidencia no se sustituyen
+por fotos de referencia.
+
+Para reiniciar la base, configura `.env.production` (ignorado por Git) con
+`MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_INITIAL_PASSWORD`, `DEMO_PASSWORD` y
+`PUBLIC_URL` (la URL HTTPS del sitio en Railway).
+Ambas contraseñas deben tener al menos 12 caracteres.
+
+1. Ejecuta `npm run reset:demo` para comprobar conexión, conteos y datos nuevos
+   sin modificar la base.
+2. Una vez revisado el destino, ejecuta
+   `npm run reset:demo -- --apply --database NOMBRE_EXACTO`.
+
+El modo `--apply` borra todos los documentos de todas las colecciones de usuario
+de esa base. Antes guarda una copia BSON Extended JSON comprimida en `backups/`,
+también ignorado por Git. Luego crea 1 administrador, 12 proveedores, 3 clientes,
+12 anuncios, 6 solicitudes, 2 reseñas, 1 mensaje y 1 notificación de demostración.
+No ejecuta pagos ni envía WhatsApp. Las contraseñas se guardan con bcrypt.
+Antes de aplicar, también comprueba que las imágenes nuevas ya estén disponibles
+en `PUBLIC_URL`; primero hay que desplegar estos cambios.
+
+Si se ejecuta en Railway, define `BACKUP_DIR=/app/uploads/backups` y conecta el
+volumen primero. El script rechaza respaldos en almacenamiento temporal.
+
 ## Licencia
 
 Proyecto académico — Universidad Católica de Cuenca, 2026.

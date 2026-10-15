@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 /* cSpell:disable */
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -529,7 +530,7 @@ function TarjetaEnviada({ solicitud, onUpdate }) {
             <div className="flex gap-1.5 flex-wrap">
               {solicitud.evidenciaCompletado.map((path) => (
                 <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
-                  <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                  <Imagen src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
                 </a>
               ))}
             </div>
@@ -1024,7 +1025,7 @@ function ModalAnuncio({ anuncio, onCerrar, onGuardado }) {
               <div className="grid grid-cols-3 gap-2">
                 {imagenesExistentes.map((path) => (
                   <div key={path} className="relative">
-                    <img src={imgUrl(path)} alt="" className="w-full h-24 object-cover rounded-lg border border-border" />
+                    <Imagen src={imgUrl(path)} alt="" className="w-full h-24 object-cover rounded-lg border border-border" />
                     <button
                       type="button"
                       onClick={() => {

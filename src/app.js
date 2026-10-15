@@ -24,7 +24,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'img-src': ["'self'", 'data:', 'https://cdn-icons-png.flaticon.com'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://cdn-icons-png.flaticon.com'],
     },
   },
 }));
@@ -45,6 +45,10 @@ app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Servir archivos subidos como estáticos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Responder cuando el archivo ya no existe, sin dejar la solicitud abierta.
+app.use('/uploads', (req, res) => {
+  res.status(404).json({ error: 'Archivo no encontrado' });
+});
 
 // ── SWAGGER UI ────────────────────────────────────────────────────
 // Solo se expone fuera de producción: documenta toda la superficie de la

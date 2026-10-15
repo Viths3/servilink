@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +14,7 @@ function Avatar({ usuario, tamano = 'w-10 h-10' }) {
   return (
     <div className={`${tamano} rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0 overflow-hidden`}>
       {usuario?.fotoPerfil
-        ? <img src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
+        ? <Imagen tipo="avatar" src={imgUrl(usuario.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
         : inicial}
     </div>
   );

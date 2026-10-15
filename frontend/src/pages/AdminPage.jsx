@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 /* cSpell:disable */
 import { useEffect, useState, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
@@ -465,7 +466,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
               <div className="flex flex-wrap gap-3">
                 {imagenesActuales.map((img, idx) => (
                   <div key={idx} className="relative group">
-                    <img
+                    <Imagen
                       src={imgUrl(img)}
                       alt={`anuncio-${idx}`}
                       onClick={() => setFotoFullscreen(img)}
@@ -551,7 +552,7 @@ function ModalEditarAnuncio({ anuncio, onGuardado, onCerrar, usuario }) {
           className="fixed inset-0 z-101 bg-black/80 flex items-center justify-center p-4"
         >
           <div className="relative max-w-2xl max-h-[90vh]">
-            <img
+            <Imagen
               src={imgUrl(fotoFullscreen)}
               alt="foto-completa"
               className="w-full h-full object-contain rounded-lg"
@@ -684,7 +685,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                 className={`w-24 h-24 rounded-full bg-primary/15 flex items-center justify-center text-3xl font-bold text-primary overflow-hidden border-2 border-primary ${usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR' ? 'cursor-pointer hover:opacity-75' : ''}`}
               >
                 {usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR'
-                  ? <img src={imgUrl(usuarioActualizado.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
+                  ? <Imagen tipo="avatar" src={imgUrl(usuarioActualizado.fotoPerfil)} alt={usuario.nombre} className="w-full h-full object-cover" />
                   : inicial}
               </div>
               {usuarioActualizado.fotoPerfil && usuarioActualizado.fotoPerfil !== 'REMOVED_BY_MODERATOR' && (
@@ -808,7 +809,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
                                           </div>
                                         ) : (
                                           <>
-                                            <img
+                                            <Imagen
                                               src={imgUrl(img)}
                                               alt={`img-${idx}`}
                                               onClick={() => setFotoFullscreen(img)}
@@ -905,7 +906,7 @@ function ModalDetalleUsuario({ usuario, onCerrar, onToggle }) {
           className="fixed inset-0 z-101 bg-black/80 flex items-center justify-center p-4"
         >
           <div className="relative max-w-2xl max-h-[90vh]">
-            <img
+            <Imagen
               src={imgUrl(fotoFullscreen)}
               alt="foto-completa"
               className="w-full h-full object-contain rounded-lg"
@@ -939,7 +940,7 @@ function FilaUsuario({ usuario: u, onToggle, onVerDetalle }) {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary shrink-0 overflow-hidden border border-primary/30">
             {u.fotoPerfil
-              ? <img src={imgUrl(u.fotoPerfil)} alt={u.nombre} className="w-full h-full object-cover" />
+              ? <Imagen tipo="avatar" src={imgUrl(u.fotoPerfil)} alt={u.nombre} className="w-full h-full object-cover" />
               : inicial}
           </div>
           <div className="min-w-0">
@@ -1261,7 +1262,7 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
               <div className="flex gap-1.5 flex-wrap">
                 {pago.solicitud.evidenciaCompletado.map((path) => (
                   <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
-                    <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                    <Imagen src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
                   </a>
                 ))}
               </div>
@@ -1275,7 +1276,7 @@ function TarjetaPagoAdmin({ pago, onActualizado }) {
                 <div className="flex gap-1.5 flex-wrap mt-1.5">
                   {pago.disputa.respuestaProveedor.evidencia.map((path) => (
                     <a key={path} href={imgUrl(path)} target="_blank" rel="noopener noreferrer">
-                      <img src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                      <Imagen src={imgUrl(path)} alt="Evidencia" className="w-14 h-14 object-cover rounded-lg border border-border" />
                     </a>
                   ))}
                 </div>

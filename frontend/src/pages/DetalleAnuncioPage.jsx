@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 /* cSpell:disable */
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ function manana() {
 }
 
 // ── Carrusel de imágenes ──────────────────────────────────────────
-function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
+function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel, categoria }) {
   const fotos = imagenes?.length ? imagenes : (imagenUrl ? [imagenUrl] : []);
   const [idx, setIdx]         = useState(0);
   const [hovered, setHovered] = useState(false);
@@ -81,7 +82,7 @@ function CarruselImagenes({ imagenes, imagenUrl, categoriaLabel }) {
           </div>
         </div>
       ) : (
-        <img
+        <Imagen tipo="servicio" categoria={categoria}
           src={imgUrl(fotos[idx])}
           alt={`Imagen ${idx + 1}`}
           className="w-full h-72 object-cover transition-opacity duration-300"
@@ -147,7 +148,7 @@ function PanelProveedor({ proveedor }) {
     <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center text-center gap-3">
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
         {proveedor?.fotoPerfil
-          ? <img src={imgUrl(proveedor.fotoPerfil)} alt={proveedor.nombre} className="w-full h-full rounded-full object-cover" />
+          ? <Imagen tipo="avatar" src={imgUrl(proveedor.fotoPerfil)} alt={proveedor.nombre} className="w-full h-full rounded-full object-cover" />
           : inicial}
       </div>
 
@@ -496,7 +497,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
               <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
           </button>
-          <img src={imgUrl(fotoAbierta)} alt="Imagen grande" className="max-w-3xl max-h-[80vh] rounded-lg object-contain" />
+          <Imagen src={imgUrl(fotoAbierta)} alt="Imagen grande" className="max-w-3xl max-h-[80vh] rounded-lg object-contain" />
         </div>
       )}
 
@@ -603,7 +604,7 @@ function ModalEditarAnuncioAdmin({ anuncio, onCerrar, onGuardado }) {
                           </div>
                         ) : (
                           <>
-                            <img
+                            <Imagen
                               src={imgUrl(img)}
                               alt={`Imagen ${idx + 1}`}
                               className="w-20 h-20 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
@@ -785,7 +786,7 @@ export default function DetalleAnuncioPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* ── Columna principal ── */}
               <div className="lg:col-span-2 space-y-6">
-                <CarruselImagenes
+                <CarruselImagenes categoria={anuncio.categoria}
                   imagenes={anuncio.imagenes}
                   imagenUrl={anuncio.imagenUrl}
                   categoriaLabel={CATEGORIAS[anuncio.categoria] ?? anuncio.categoria}

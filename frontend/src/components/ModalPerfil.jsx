@@ -1,3 +1,4 @@
+import Imagen from './Imagen';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
@@ -167,7 +168,7 @@ export default function ModalPerfil({ onCerrar }) {
                   className="relative w-28 h-28 rounded-full bg-primary/15 flex items-center justify-center text-4xl font-bold text-primary shrink-0 overflow-hidden border-2 border-primary shadow-md cursor-pointer group"
                 >
                   {fotoActual && fotoActual !== 'REMOVED_BY_MODERATOR'
-                    ? <img src={imgUrl(fotoActual)} alt="perfil" className="w-full h-full object-cover" />
+                    ? <Imagen tipo="avatar" src={imgUrl(fotoActual)} alt="perfil" className="w-full h-full object-cover" />
                     : inicial}
 
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -232,7 +233,7 @@ export default function ModalPerfil({ onCerrar }) {
               className="fixed inset-0 z-100 bg-black/80 flex items-center justify-center p-4"
             >
               <div className="relative max-w-2xl max-h-[90vh]">
-                <img
+                <Imagen tipo="avatar"
                   src={imgUrl(fotoActual)}
                   alt="foto-completa"
                   className="w-full h-full object-contain rounded-lg"

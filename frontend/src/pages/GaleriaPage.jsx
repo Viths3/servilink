@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axios';
@@ -38,7 +39,7 @@ function AnuncioCard({ anuncio }) {
       >
         {fotos.length > 0 ? (
           <>
-            <img
+            <Imagen tipo="servicio" categoria={anuncio.categoria}
               src={imgUrl(fotos[idx])}
               alt={anuncio.titulo}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

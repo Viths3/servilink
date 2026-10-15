@@ -1,3 +1,4 @@
+import Imagen from '../components/Imagen';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../lib/axios';
@@ -52,7 +53,7 @@ function TarjetaAnuncio({ anuncio }) {
       className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col group"
     >
       {(anuncio.imagenes?.[0] ?? anuncio.imagenUrl) ? (
-        <img src={imgUrl(anuncio.imagenes?.[0] ?? anuncio.imagenUrl)} alt={anuncio.titulo} className="w-full h-36 object-cover" />
+        <Imagen tipo="servicio" categoria={anuncio.categoria} src={imgUrl(anuncio.imagenes?.[0] ?? anuncio.imagenUrl)} alt={anuncio.titulo} className="w-full h-36 object-cover" />
       ) : (
         <div className="w-full h-36 bg-background flex items-center justify-center">
           <span className="text-4xl font-bold text-border">{inicial}</span>
@@ -85,7 +86,7 @@ function TarjetaResena({ resena }) {
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0 overflow-hidden">
           {resena.cliente?.fotoPerfil
-            ? <img src={imgUrl(resena.cliente.fotoPerfil)} alt={resena.cliente.nombre} className="w-full h-full object-cover" />
+            ? <Imagen tipo="avatar" src={imgUrl(resena.cliente.fotoPerfil)} alt={resena.cliente.nombre} className="w-full h-full object-cover" />
             : inicial}
         </div>
         <div className="flex-1 min-w-0">
@@ -156,7 +157,7 @@ export default function PerfilPublicoPage() {
               <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
                 <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary shrink-0 overflow-hidden border-2 border-border">
                   {perfil.fotoPerfil
-                    ? <img src={imgUrl(perfil.fotoPerfil)} alt={perfil.nombre} className="w-full h-full object-cover" />
+                    ? <Imagen tipo="avatar" src={imgUrl(perfil.fotoPerfil)} alt={perfil.nombre} className="w-full h-full object-cover" />
                     : inicial}
                 </div>
 
@@ -253,7 +254,7 @@ export default function PerfilPublicoPage() {
                           title={trabajo.descripcion}
                           className="group relative aspect-square rounded-xl overflow-hidden bg-background"
                         >
-                          <img
+                          <Imagen
                             src={imgUrl(foto)}
                             alt={trabajo.descripcion}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
